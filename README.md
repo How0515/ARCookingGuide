@@ -72,3 +72,26 @@ No manual installation is needed unless Unity prompts for updates.
     -   ProjectSettings folder is intact
 
 ------------------------------------------------------------------------
+
+## 🌱 Branch Strategy
+
+- **main**  
+  Stable release branch. Contains production-ready builds.
+
+- **dev**  
+  Integration branch. All features are merged here before going to main.
+
+- **feature/***  
+  Each team member creates a feature branch from `dev`, e.g.:
+
+  `feature/step-panel-ui`  
+  `feature/recipe-json-loader`  
+  `feature/voice-command`  
+
+### Workflow
+1. Checkout dev  
+2. Create your feature branch  
+3. Commit & push  
+4. Merge back into dev after review
+
+------------------------------------------------------------------------
