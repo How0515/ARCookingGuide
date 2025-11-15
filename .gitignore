@@ -1,0 +1,51 @@
+# VS / build artifacts
+.vs/
+.vsconfig
+_builds/
+*.db
+
+# Unity
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Mm]emoryCaptures/
+UserSettings/
+ExportedObj/
+
+# Asset meta
+*.pidb
+*.user
+*.userprefs
+*.csproj
+*.sln
+*.suo
+*.tmp
+*.booproj
+*.svd
+
+# Unity cache
+sysinfo.txt
+
+# VSCode
+.vscode/
+
+# JetBrains Rider
+.idea/
+
+# C# Perf/Profile
+*.psess
+*.vsp
+*.vspx
+*.ncb
+
+# Crash reports
+*.stackdump
+
+# MRTK / HoloLens specific
+*.appx
+*.appxbundle
+*.appxupload
+AppPackages/
