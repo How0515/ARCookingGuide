@@ -1,7 +1,7 @@
 # AR Cooking Guide (HoloLens 2 · Unity · MRTK3)
 
 A simple Mixed Reality cooking assistant built for **HoloLens 2** using\
-**Unity 2022.3.22f1**, **MRTK3**, and **OpenXR**.
+**Unity 2022.3.6f2**, **MRTK3**, and **OpenXR**.
 
 This repository contains the base Unity project structure for
 development.
@@ -12,7 +12,7 @@ development.
 
 To open this project correctly, please install:
 
-**Unity Version: 2022.3.22f1 (LTS)**\
+**Unity Version: 2022.3.6f2 (LTS)**\
 \> All team members must use the *exact same version* to avoid package
 conflicts.
 
@@ -67,7 +67,7 @@ No manual installation is needed unless Unity prompts for updates.
 ## 📄 Notes
 
 -   If Unity shows errors, ensure:
-    -   Unity version matches **2022.3.22f1**
+    -   Unity version matches **2022.3.6f2**
     -   No missing packages in Package Manager
     -   ProjectSettings folder is intact
 
