@@ -175,11 +175,36 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 193709740593190160, guid: b131bec72f76c2b4e9c44637ce9f0e06,
+        type: 3}
+      propertyPath: voiceCommand
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 1300708777811878237, guid: b131bec72f76c2b4e9c44637ce9f0e06,
         type: 3}
       propertyPath: elasticsManager
       value: 
       objectReference: {fileID: 1292179759}
+    - target: {fileID: 1529107183378153764, guid: b131bec72f76c2b4e9c44637ce9f0e06,
+        type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1868792022060162763, guid: b131bec72f76c2b4e9c44637ce9f0e06,
+        type: 3}
+      propertyPath: keywords.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1868792022060162763, guid: b131bec72f76c2b4e9c44637ce9f0e06,
+        type: 3}
+      propertyPath: keywords.Array.data[0].keyword
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1868792022060162763, guid: b131bec72f76c2b4e9c44637ce9f0e06,
+        type: 3}
+      propertyPath: keywords.Array.data[0].response.m_PersistentCalls.m_Calls.Array.size
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2401291981706482559, guid: b131bec72f76c2b4e9c44637ce9f0e06,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -230,10 +255,25 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2492739825556803532, guid: b131bec72f76c2b4e9c44637ce9f0e06,
+        type: 3}
+      propertyPath: voiceCommand
+      value: "\uB2E4\uC74C"
+      objectReference: {fileID: 0}
     - target: {fileID: 3404384218588095732, guid: b131bec72f76c2b4e9c44637ce9f0e06,
         type: 3}
       propertyPath: m_Name
       value: Prefab
+      objectReference: {fileID: 0}
+    - target: {fileID: 3773791785412855571, guid: b131bec72f76c2b4e9c44637ce9f0e06,
+        type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 5639010294987758188, guid: b131bec72f76c2b4e9c44637ce9f0e06,
+        type: 3}
+      propertyPath: m_Mesh
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 8128214325490974979, guid: b131bec72f76c2b4e9c44637ce9f0e06,
         type: 3}
@@ -260,6 +300,18 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 1292179757}
+    - targetCorrespondingSourceObject: {fileID: 3404384218588095732, guid: b131bec72f76c2b4e9c44637ce9f0e06,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1292179768}
+    - targetCorrespondingSourceObject: {fileID: 8004509404319544202, guid: b131bec72f76c2b4e9c44637ce9f0e06,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
+    - targetCorrespondingSourceObject: {fileID: 3001985174669249955, guid: b131bec72f76c2b4e9c44637ce9f0e06,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
     - targetCorrespondingSourceObject: {fileID: 8502167498761960785, guid: b131bec72f76c2b4e9c44637ce9f0e06,
         type: 3}
       insertIndex: -1
@@ -714,6 +766,34 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTetherWhenManipulating: 0
   IsBoundsHandles: 0
+--- !u!114 &1292179768
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1292179749}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45b3eff181cc4244a8a14234096e62fd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isFocusRequired: 0
+  keywords:
+  - keyword: "\uB2E4\uC74C"
+    response:
+      m_PersistentCalls:
+        m_Calls: []
+  - keyword: Next
+    response:
+      m_PersistentCalls:
+        m_Calls: []
+  - keyword: "\uD0C0\uC774\uBA38 \uC2DC\uC791"
+    response:
+      m_PersistentCalls:
+        m_Calls: []
+  persistentKeywords: 0
+  speechConfirmationTooltipPrefab: {fileID: 0}
 --- !u!1 &1390109871
 GameObject:
   m_ObjectHideFlags: 0
