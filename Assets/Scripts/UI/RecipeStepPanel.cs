@@ -378,3 +378,4 @@ public class RecipeStepPanel : MonoBehaviour
         autoReattachOnDistance = enable;
         detachMaxDistance = maxDistance;
     }
+}
