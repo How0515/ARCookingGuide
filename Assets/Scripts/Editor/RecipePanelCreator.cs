@@ -128,17 +128,9 @@ public class RecipePanelCreator : EditorWindow
         stepsRect.anchoredPosition = new Vector2(0, -150);
         stepsRect.sizeDelta = new Vector2(-40, -180);
 
-        // VerticalLayoutGroup 추가
-        VerticalLayoutGroup layout = stepsContainer.AddComponent<VerticalLayoutGroup>();
-        layout.spacing = 10;
-        layout.padding = new RectOffset(10, 10, 10, 10);
-        layout.childForceExpandHeight = false;
-        layout.childControlHeight = true;
-        layout.childControlWidth = true;
-
-        // ContentSizeFitter 추가
-        ContentSizeFitter fitter = stepsContainer.AddComponent<ContentSizeFitter>();
-        fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        // 참고: VerticalLayoutGroup은 수동으로 추가하세요
+        // Editor에서 LayoutGroup 생성 시 에러 발생하므로 주석 처리
+        // VerticalLayoutGroup 설정이 필요하면 프리팹에서 수동으로 추가
 
         // 7. Progress Display
         GameObject progressDisplay = CreateUIObject("ProgressDisplay", root.transform);
@@ -170,21 +162,43 @@ public class RecipePanelCreator : EditorWindow
             Debug.Log("✅ MRTK 컴포넌트 추가 완료");
         }
 
-        // 9. RecipeStepPanel 스크립트 추가
+        // 9. StepItem 프리팹이 없으면 자동 생성
+        if (!AssetDatabase.LoadAssetAtPath("Assets/Prefabs/UI/RecipeStepItem.prefab", typeof(GameObject)))
+        {
+            Debug.Log("📝 RecipeStepItem 프리팹이 없어서 자동 생성합니다...");
+            CreateRecipeStepItemPrefab();
+        }
+
+        // 10. RecipeStepPanel 스크립트 추가 및 참조 연결
         RecipeStepPanel panel = root.AddComponent<RecipeStepPanel>();
         
-        // 10. DraggableStepPanel 스크립트 추가
+        // 참조 자동 연결
+        panel.recipeNameText = root.transform.Find("HeaderSection/RecipeNameText").GetComponent<TMP_Text>();
+        panel.ingredientsText = root.transform.Find("HeaderSection/IngredientsText").GetComponent<TMP_Text>();
+        panel.stepsContainer = root.transform.Find("StepsContainer");
+        panel.progressDisplay = root.transform.Find("ProgressDisplay");
+        panel.canvasGroup = root.GetComponent<CanvasGroup>();
+        
+        // StepItem 프리팹 참조
+        GameObject stepItemPrefab = AssetDatabase.LoadAssetAtPath("Assets/Prefabs/UI/RecipeStepItem.prefab", typeof(GameObject)) as GameObject;
+        if (stepItemPrefab != null)
+            panel.stepItemPrefab = stepItemPrefab;
+        
+        // 11. DraggableStepPanel 스크립트 추가
         root.AddComponent<DraggableStepPanel>();
 
-        // 11. Prefab 저장
+        // 12. Prefab 저장
         string prefabPath = "Assets/Prefabs/UI/RecipePanel.prefab";
         PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
 
         Debug.Log($"✅ RecipePanel 프리팹 생성 완료: {prefabPath}");
 
-        // 12. 생성된 오브젝트 선택
+        // 13. 생성된 오브젝트 선택
         Selection.activeGameObject = root;
         EditorGUIUtility.PingObject(root);
+        
+        // Canvas 강제 업데이트
+        Canvas.ForceUpdateCanvases();
     }
 
     private void CreateRecipeStepItemPrefab()

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 
 /// <summary>
@@ -26,16 +27,16 @@ public class RecipeStepPanel : MonoBehaviour
     [SerializeField] private List<CookingStep> stepList = new List<CookingStep>();
 
     [Header("UI References")]
-    [SerializeField] private TextMeshProUGUI recipeNameText;
-    [SerializeField] private TextMeshProUGUI ingredientsText;
-    [SerializeField] private Transform stepsContainer; // 단계들을 담을 컨테이너
-    [SerializeField] private Transform progressDisplay; // 진행률 표시 (1/6 같은)
+    public TMP_Text recipeNameText;
+    public TMP_Text ingredientsText;
+    public Transform stepsContainer; // 단계들을 담을 컨테이너
+    public Transform progressDisplay; // 진행률 표시 (1/6 같은)
 
     [Header("UI Prefab")]
-    [SerializeField] private GameObject stepItemPrefab; // 단계 아이템 프리팹
+    public GameObject stepItemPrefab; // 단계 아이템 프리팹
 
     [Header("Panel Settings")]
-    [SerializeField] private CanvasGroup canvasGroup; // 투명도 조절용
+    public CanvasGroup canvasGroup; // 투명도 조절용
     [SerializeField] private float defaultAlpha = 0.9f;
 
     private List<RecipeStepItem> stepItems = new List<RecipeStepItem>();
@@ -48,7 +49,39 @@ public class RecipeStepPanel : MonoBehaviour
         if (canvasGroup != null)
             canvasGroup.alpha = defaultAlpha;
 
+        // StepsContainer에 LayoutGroup 자동 추가
+        SetupStepsContainerLayout();
+        
         InitializeUI();
+    }
+
+    /// <summary>
+    /// StepsContainer에 VerticalLayoutGroup 자동 설정
+    /// </summary>
+    private void SetupStepsContainerLayout()
+    {
+        if (stepsContainer == null)
+            return;
+
+        // 기존 LayoutGroup이 없으면 추가
+        VerticalLayoutGroup layout = stepsContainer.GetComponent<VerticalLayoutGroup>();
+        if (layout == null)
+        {
+            layout = stepsContainer.gameObject.AddComponent<VerticalLayoutGroup>();
+            layout.spacing = 10;
+            layout.padding = new RectOffset(10, 10, 10, 10);
+            layout.childForceExpandHeight = false;
+            layout.childControlHeight = true;
+            layout.childControlWidth = true;
+        }
+
+        // ContentSizeFitter도 추가
+        ContentSizeFitter fitter = stepsContainer.GetComponent<ContentSizeFitter>();
+        if (fitter == null)
+        {
+            fitter = stepsContainer.gameObject.AddComponent<ContentSizeFitter>();
+            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        }
     }
 
     /// <summary>
