@@ -69,7 +69,6 @@ public class RecipeStepPanel : MonoBehaviour
             if (canvas.worldCamera == null)
             {
                 canvas.worldCamera = Camera.main;
-                Debug.Log("✅ Canvas Event Camera 자동 설정: Main Camera");
             }
         }
 
@@ -78,7 +77,6 @@ public class RecipeStepPanel : MonoBehaviour
         if (raycaster == null)
         {
             gameObject.AddComponent<GraphicRaycaster>();
-            Debug.Log("✅ Graphic Raycaster 자동 추가");
         }
     }
 
@@ -129,8 +127,6 @@ public class RecipeStepPanel : MonoBehaviour
             ingredientsText.text = stepList[0].ingredients;
 
         // 단계 아이템 생성
-        Debug.Log($"🔧 단계 아이템 생성 시작: stepList.Count={stepList.Count}, stepsContainer={stepsContainer != null}, stepItemPrefab={stepItemPrefab != null}");
-        
         if (stepsContainer != null && stepItemPrefab != null)
         {
             int index = 1;
@@ -141,17 +137,11 @@ public class RecipeStepPanel : MonoBehaviour
                 
                 if (stepItem != null)
                 {
-                    Debug.Log($"🔧 단계 {index} Initialize 호출 중...");
                     stepItem.Initialize(step, index);
                     stepItems.Add(stepItem);
                     index++;
                 }
-                else
-                {
-                    Debug.LogError($"❌ RecipeStepItem 컴포넌트를 찾을 수 없음: {itemObj.name}");
-                }
             }
-            Debug.Log($"✅ 총 {stepItems.Count}개 단계 아이템 생성 완료");
         }
         else
         {
@@ -166,8 +156,6 @@ public class RecipeStepPanel : MonoBehaviour
     /// </summary>
     private void CreateSampleSteps()
     {
-        Debug.Log("🔧 CreateSampleSteps() 호출됨");
-        
         if (stepList == null)
             stepList = new List<CookingStep>();
         
@@ -222,8 +210,14 @@ public class RecipeStepPanel : MonoBehaviour
             timerSeconds = 0,
                 description = "접시에 담고 파슬리를 뿌려 완성합니다. 취향에 따라 파마산 치즈를 추가하세요."
             });
-        
-        Debug.Log($"✅ 샘플 데이터 생성 완료: {stepList.Count}개 단계");
+    }
+
+    /// <summary>
+    /// 단계 완료 시 호출 (public으로 RecipeStepItem에서 접근)
+    /// </summary>
+    public void OnStepCompleted()
+    {
+        UpdateProgressDisplay();
     }
 
     /// <summary>
@@ -233,7 +227,7 @@ public class RecipeStepPanel : MonoBehaviour
     {
         if (progressDisplay != null)
         {
-            TextMeshProUGUI progressText = progressDisplay.GetComponentInChildren<TextMeshProUGUI>();
+            TMP_Text progressText = progressDisplay.GetComponentInChildren<TMP_Text>();
             if (progressText != null)
             {
                 int completedCount = stepItems.FindAll(s => s.IsCompleted).Count;

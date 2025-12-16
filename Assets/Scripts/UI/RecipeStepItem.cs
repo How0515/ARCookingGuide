@@ -11,11 +11,11 @@ using UnityEngine.UI;
 public class RecipeStepItem : MonoBehaviour
 {
     [Header("UI Components")]
-    [SerializeField] private TextMeshProUGUI stepNumberText;
-    [SerializeField] private TextMeshProUGUI descriptionText;
-    [SerializeField] private Image stepImage;
-    [SerializeField] private Toggle completionCheckbox;
-    [SerializeField] private CanvasGroup canvasGroup;
+    private TMP_Text stepNumberText;
+    private TMP_Text descriptionText;
+    private Image stepImage;
+    private Toggle completionCheckbox;
+    private CanvasGroup canvasGroup;
 
     private RecipeStepPanel.CookingStep stepData;
     private int stepNumber;
@@ -29,6 +29,26 @@ public class RecipeStepItem : MonoBehaviour
         stepData = step;
         stepNumber = number;
 
+        // 컴포넌트 자동 찾기
+        if (completionCheckbox == null)
+            completionCheckbox = GetComponentInChildren<Toggle>();
+        
+        if (stepNumberText == null)
+            stepNumberText = GetComponentInChildren<TMP_Text>();
+        
+        if (descriptionText == null)
+        {
+            TMP_Text[] texts = GetComponentsInChildren<TMP_Text>();
+            if (texts.Length > 1)
+                descriptionText = texts[1];
+        }
+        
+        if (stepImage == null)
+            stepImage = GetComponentInChildren<Image>();
+        
+        if (canvasGroup == null)
+            canvasGroup = GetComponent<CanvasGroup>();
+
         // UI 업데이트
         if (stepNumberText != null)
             stepNumberText.text = number.ToString();
@@ -41,6 +61,8 @@ public class RecipeStepItem : MonoBehaviour
 
         if (completionCheckbox != null)
         {
+            // 기존 리스너 제거 후 추가 (중복 방지)
+            completionCheckbox.onValueChanged.RemoveAllListeners();
             completionCheckbox.onValueChanged.AddListener(OnCheckboxChanged);
         }
 
@@ -54,6 +76,13 @@ public class RecipeStepItem : MonoBehaviour
     private void OnCheckboxChanged(bool isChecked)
     {
         SetCompleted(isChecked);
+        
+        // 부모 패널의 진행률 업데이트
+        RecipeStepPanel parentPanel = GetComponentInParent<RecipeStepPanel>();
+        if (parentPanel != null)
+        {
+            parentPanel.OnStepCompleted();
+        }
     }
 
     /// <summary>
