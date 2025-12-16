@@ -307,14 +307,15 @@ public class RecipeStepItem : MonoBehaviour
     {
         if (!isDetached || originalParent == null) return;
 
+        // GraphicRaycaster를 먼저 제거 (Canvas 의존성 때문)
+        GraphicRaycaster raycaster = GetComponent<GraphicRaycaster>();
+        if (raycaster != null)
+            DestroyImmediate(raycaster);
+        
         // Canvas 제거
         Canvas canvas = GetComponent<Canvas>();
         if (canvas != null)
             DestroyImmediate(canvas);
-        
-        GraphicRaycaster raycaster = GetComponent<GraphicRaycaster>();
-        if (raycaster != null)
-            DestroyImmediate(raycaster);
 
         // 부모로 복귀
         RectTransform rectTransform = GetComponent<RectTransform>();
