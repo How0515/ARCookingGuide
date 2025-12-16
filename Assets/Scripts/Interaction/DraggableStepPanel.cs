@@ -10,11 +10,8 @@ public class DraggableStepPanel : MonoBehaviour
 {
     [Header("Drag Settings")]
     [SerializeField] private bool allowDrag = true;
-    [SerializeField] private bool allowRotation = true;
-    [SerializeField] private bool allowScaling = false; // 스케일은 기본 false
 
     private ObjectManipulator objectManipulator;
-    private BoundsControl boundsControl;
 
     private void Start()
     {
@@ -22,20 +19,8 @@ public class DraggableStepPanel : MonoBehaviour
         objectManipulator = GetComponent<ObjectManipulator>();
         if (objectManipulator != null)
         {
-            // 이동 허용
+            // 원거리 조작 허용
             objectManipulator.AllowFarManipulation = true;
-            
-            // 2손가락 회전 활성화
-            objectManipulator.TwoHandedManipulationType = 
-                TransformFlags.Move | TransformFlags.Rotate;
-        }
-
-        // BoundsControl 설정 (이미 Prefab에 있음)
-        boundsControl = GetComponent<BoundsControl>();
-        if (boundsControl != null)
-        {
-            boundsControl.ActivationBehavior = 
-                BoundsControlActivationType.ActivateByProximityAndPointer;
         }
     }
 
@@ -47,14 +32,6 @@ public class DraggableStepPanel : MonoBehaviour
         allowDrag = enabled;
         if (objectManipulator != null)
             objectManipulator.enabled = enabled;
-    }
-
-    /// <summary>
-    /// 회전 기능 활성화/비활성화
-    /// </summary>
-    public void SetRotationEnabled(bool enabled)
-    {
-        allowRotation = enabled;
     }
 
     /// <summary>

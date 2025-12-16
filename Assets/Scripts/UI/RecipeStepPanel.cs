@@ -39,7 +39,6 @@ public class RecipeStepPanel : MonoBehaviour
     [SerializeField] private float defaultAlpha = 0.9f;
 
     private List<RecipeStepItem> stepItems = new List<RecipeStepItem>();
-    private int currentStepIndex = 0;
 
     private void Start()
     {
