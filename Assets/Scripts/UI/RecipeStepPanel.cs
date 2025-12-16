@@ -39,6 +39,10 @@ public class RecipeStepPanel : MonoBehaviour
     public CanvasGroup canvasGroup; // 투명도 조절용
     [SerializeField] private float defaultAlpha = 0.9f;
 
+    [Header("Detach Settings")]
+    [SerializeField] private float detachMaxDistance = 2f; // 이 거리 이상 벗어나면 표시
+    [SerializeField] private bool autoReattachOnDistance = false; // 거리 기반 자동 복귀 활성화
+
     private List<RecipeStepItem> stepItems = new List<RecipeStepItem>();
 
     private void Start()
@@ -56,6 +60,15 @@ public class RecipeStepPanel : MonoBehaviour
         SetupStepsContainerLayout();
         
         InitializeUI();
+    }
+
+    private void Update()
+    {
+        // 거리 기반 자동 복귀 (활성화된 경우)
+        if (autoReattachOnDistance)
+        {
+            CheckDetachedStepsDistance();
+        }
     }
 
     /// <summary>
@@ -338,4 +351,30 @@ public class RecipeStepPanel : MonoBehaviour
         }
         return count;
     }
-}
+
+    /// <summary>
+    /// 분리된 단계들의 거리 확인 및 자동 복귀 처리
+    /// </summary>
+    private void CheckDetachedStepsDistance()
+    {
+        foreach (var stepItem in stepItems)
+        {
+            if (stepItem.IsDetached)
+            {
+                float distance = Vector3.Distance(stepItem.transform.position, transform.position);
+                if (distance > detachMaxDistance)
+                {
+                    stepItem.ReattachToParent();
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// 거리 기반 자동 복귀 설정
+    /// </summary>
+    public void SetAutoReattachOnDistance(bool enable, float maxDistance = 2f)
+    {
+        autoReattachOnDistance = enable;
+        detachMaxDistance = maxDistance;
+    }

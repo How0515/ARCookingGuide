@@ -26,6 +26,9 @@ public class RecipeStepItem : MonoBehaviour
     private int originalSiblingIndex;
     private bool isDetached = false;
 
+    // 분리 후에도 진행률 업데이트를 위해 부모 패널 참조 저장
+    private RecipeStepPanel parentPanel;
+
     private RecipeStepPanel.CookingStep stepData;
     private int stepNumber;
     private bool isCompleted = false;
@@ -75,8 +78,9 @@ public class RecipeStepItem : MonoBehaviour
             completionCheckbox.onValueChanged.AddListener(OnCheckboxChanged);
         }
 
-        if (canvasGroup == null)
-            canvasGroup = GetComponent<CanvasGroup>();
+        // 부모 패널 참조 저장 (분리 후에도 진행률 업데이트를 위함)
+        if (parentPanel == null)
+            parentPanel = GetComponentInParent<RecipeStepPanel>();
 
         // 드래그 기능 설정
         SetupDragFunctionality();
@@ -113,11 +117,20 @@ public class RecipeStepItem : MonoBehaviour
     {
         SetCompleted(isChecked);
         
-        // 부모 패널의 진행률 업데이트
-        RecipeStepPanel parentPanel = GetComponentInParent<RecipeStepPanel>();
+        // 부모 패널의 진행률 업데이트 (분리된 상태에서도 작동)
         if (parentPanel != null)
         {
             parentPanel.OnStepCompleted();
+        }
+        else
+        {
+            // 혹시 parentPanel이 null인 경우 다시 한 번 찾기
+            RecipeStepPanel foundPanel = GetComponentInParent<RecipeStepPanel>();
+            if (foundPanel != null)
+            {
+                parentPanel = foundPanel;
+                parentPanel.OnStepCompleted();
+            }
         }
     }
 
