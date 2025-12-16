@@ -302,18 +302,54 @@ public class RecipePanelCreator : EditorWindow
         imageRect.sizeDelta = new Vector2(90, 80);
         imageRect.anchoredPosition = new Vector2(-10, 0);
 
-        // 7. CanvasGroup 추가
+        // 7. Move Button (손모양 드래그 버튼, 우측 상단)
+        GameObject moveButtonObj = CreateUIObject("MoveButton", stepItem.transform);
+        Button moveButton = moveButtonObj.AddComponent<Button>();
+        Image moveButtonImage = moveButtonObj.AddComponent<Image>();
+        moveButtonImage.color = new Color(0.3f, 0.7f, 1f, 0.9f);  // 파란색
+        RectTransform moveButtonRect = moveButtonObj.GetComponent<RectTransform>();
+        moveButtonRect.anchorMin = new Vector2(1, 0.5f);
+        moveButtonRect.anchorMax = new Vector2(1, 0.5f);
+        moveButtonRect.pivot = new Vector2(1, 0.5f);
+        moveButtonRect.sizeDelta = new Vector2(40, 40);
+        moveButtonRect.anchoredPosition = new Vector2(-50, 0);
+
+        // Move Button Text
+        GameObject moveButtonText = CreateTextObject("Text", moveButtonObj.transform, 28, TextAlignmentOptions.Center);
+        TMP_Text moveButtonLabel = moveButtonText.GetComponent<TMP_Text>();
+        moveButtonLabel.text = "👆";  // 손모양 이모지
+        moveButtonLabel.color = Color.white;
+
+        // 8. Delete Button (휴지통, 우측 하단)
+        GameObject deleteButtonObj = CreateUIObject("DeleteButton", stepItem.transform);
+        Button deleteButton = deleteButtonObj.AddComponent<Button>();
+        Image deleteButtonImage = deleteButtonObj.AddComponent<Image>();
+        deleteButtonImage.color = new Color(0.8f, 0.2f, 0.2f, 0.8f);
+        RectTransform deleteButtonRect = deleteButtonObj.GetComponent<RectTransform>();
+        deleteButtonRect.anchorMin = new Vector2(1, 0.5f);
+        deleteButtonRect.anchorMax = new Vector2(1, 0.5f);
+        deleteButtonRect.pivot = new Vector2(1, 0.5f);
+        deleteButtonRect.sizeDelta = new Vector2(40, 40);
+        deleteButtonRect.anchoredPosition = new Vector2(-50, -45);
+
+        // Delete Button Text
+        GameObject deleteButtonText = CreateTextObject("Text", deleteButtonObj.transform, 24, TextAlignmentOptions.Center);
+        TMP_Text deleteButtonLabel = deleteButtonText.GetComponent<TMP_Text>();
+        deleteButtonLabel.text = "🗑";
+        deleteButtonLabel.color = Color.white;
+
+        // 9. CanvasGroup 추가
         CanvasGroup canvasGroup = stepItem.AddComponent<CanvasGroup>();
 
-        // 8. LayoutElement 추가
+        // 10. LayoutElement 추가
         LayoutElement layoutElement = stepItem.AddComponent<LayoutElement>();
         layoutElement.minHeight = 100;
         layoutElement.preferredHeight = 100;
 
-        // 9. RecipeStepItem 스크립트 추가
+        // 11. RecipeStepItem 스크립트 추가
         stepItem.AddComponent<RecipeStepItem>();
 
-        // 10. MRTK 드래그 컴포넌트 추가
+        // 12. MRTK 드래그 컴포넌트 추가
         if (createMRTKComponents)
         {
             // BoxCollider (드래그 영역)
@@ -328,7 +364,7 @@ public class RecipePanelCreator : EditorWindow
             stepItem.AddComponent<NearInteractionGrabbable>();
         }
 
-        // 11. Prefab 저장
+        // 13. Prefab 저장
         string prefabPath = "Assets/Prefabs/UI/RecipeStepItem.prefab";
         GameObject savedPrefab = PrefabUtility.SaveAsPrefabAsset(stepItem, prefabPath);
 

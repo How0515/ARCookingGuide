@@ -8,7 +8,8 @@ using Microsoft.MixedReality.Toolkit.Input;
 /// 단일 요리 단계 아이템
 /// - 단계 번호, 설명, 이미지 표시
 /// - 체크박스 기능
-/// - 개별 드래그 가능
+/// - 개별 드래그 가능 (번호 부분만 잡아서 드래그)
+/// - 분리 시 재이동/휴지통 버튼 표시
 /// </summary>
 public class RecipeStepItem : MonoBehaviour
 {
@@ -18,6 +19,14 @@ public class RecipeStepItem : MonoBehaviour
     private Image stepImage;
     private Toggle completionCheckbox;
     private CanvasGroup canvasGroup;
+    private RectTransform rectTransform;
+
+    [Header("Drag Handle")]
+    private Image dragHandle;  // 번호 부분 (드래그 가능 영역)
+
+    [Header("Action Buttons")]
+    private Button moveButton;     // + 버튼 (분리)
+    private Button deleteButton;   // 휴지통 버튼 (복귀)
 
     [Header("Drag Settings")]
     [SerializeField] private bool isDraggable = true;
@@ -25,6 +34,7 @@ public class RecipeStepItem : MonoBehaviour
     private Transform originalParent;
     private int originalSiblingIndex;
     private bool isDetached = false;
+    private bool isDragging = false;
 
     // 분리 후에도 진행률 업데이트를 위해 부모 패널 참조 저장
     private RecipeStepPanel parentPanel;
@@ -40,6 +50,10 @@ public class RecipeStepItem : MonoBehaviour
     {
         stepData = step;
         stepNumber = number;
+
+        // RectTransform 저장
+        if (rectTransform == null)
+            rectTransform = GetComponent<RectTransform>();
 
         // 컴포넌트 자동 찾기
         if (completionCheckbox == null)
@@ -60,6 +74,14 @@ public class RecipeStepItem : MonoBehaviour
         
         if (canvasGroup == null)
             canvasGroup = GetComponent<CanvasGroup>();
+
+        // 드래그 핸들 찾기 (번호 부분)
+        if (dragHandle == null)
+        {
+            Transform handleTrans = transform.Find("StepNumberText");
+            if (handleTrans != null)
+                dragHandle = handleTrans.GetComponent<Image>();
+        }
 
         // UI 업데이트
         if (stepNumberText != null)
@@ -82,8 +104,39 @@ public class RecipeStepItem : MonoBehaviour
         if (parentPanel == null)
             parentPanel = GetComponentInParent<RecipeStepPanel>();
 
+        // 버튼 초기화
+        SetupActionButtons();
+
         // 드래그 기능 설정
         SetupDragFunctionality();
+    }
+
+    /// <summary>
+    /// 액션 버튼(+, 휴지통) 초기화
+    /// </summary>
+    private void SetupActionButtons()
+    {
+        // 기존 버튼 찾기 또는 생성
+        Transform moveButtonTrans = transform.Find("MoveButton");
+        Transform deleteButtonTrans = transform.Find("DeleteButton");
+
+        if (moveButtonTrans != null && moveButton == null)
+        {
+            moveButton = moveButtonTrans.GetComponent<Button>();
+            if (moveButton != null)
+                moveButton.onClick.AddListener(OnMoveButtonClicked);
+        }
+
+        if (deleteButtonTrans != null && deleteButton == null)
+        {
+            deleteButton = deleteButtonTrans.GetComponent<Button>();
+            if (deleteButton != null)
+                deleteButton.onClick.AddListener(OnDeleteButtonClicked);
+        }
+
+        // 초기에는 DeleteButton만 숨김 (분리되었을 때만 표시)
+        if (deleteButton != null)
+            deleteButton.gameObject.SetActive(false);
     }
 
     /// <summary>
@@ -108,6 +161,27 @@ public class RecipeStepItem : MonoBehaviour
             originalParent = transform.parent;
             originalSiblingIndex = transform.GetSiblingIndex();
         }
+    }
+
+    /// <summary>
+    /// 손모양 버튼 클릭 이벤트
+    /// 분리되지 않았으면 분리, 이미 분리되었으면 드래그 가능 상태 유지
+    /// </summary>
+    private void OnMoveButtonClicked()
+    {
+        if (!isDetached)
+        {
+            DetachFromParent();
+        }
+        // 분리된 상태에서는 ObjectManipulator가 드래그를 처리
+    }
+
+    /// <summary>
+    /// 휴지통 버튼 클릭 이벤트
+    /// </summary>
+    private void OnDeleteButtonClicked()
+    {
+        ReattachToParent();
     }
 
     /// <summary>
@@ -221,6 +295,9 @@ public class RecipeStepItem : MonoBehaviour
         }
 
         isDetached = true;
+
+        // 분리 후 버튼 표시 전환
+        UpdateButtonVisibility();
     }
 
     /// <summary>
@@ -249,6 +326,24 @@ public class RecipeStepItem : MonoBehaviour
         rectTransform.localRotation = Quaternion.identity;
 
         isDetached = false;
+
+        // 복귀 후 버튼 표시 전환
+        UpdateButtonVisibility();
+    }
+
+    /// <summary>
+    /// 분리 상태에 따라 버튼 표시 업데이트
+    /// </summary>
+    private void UpdateButtonVisibility()
+    {
+        // MoveButton은 항상 표시 (분리된 상태에서도 드래그 가능하게)
+        // DeleteButton은 분리되었을 때만 표시
+        
+        if (moveButton != null)
+            moveButton.gameObject.SetActive(true);  // 항상 표시
+
+        if (deleteButton != null)
+            deleteButton.gameObject.SetActive(isDetached);
     }
 
     /// <summary>
