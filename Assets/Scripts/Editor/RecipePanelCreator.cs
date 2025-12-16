@@ -164,18 +164,22 @@ public class RecipePanelCreator : EditorWindow
         // 8. MRTK 컴포넌트 추가
         if (createMRTKComponents)
         {
-            // ObjectManipulator
+            // ObjectManipulator - 전체 패널
             ObjectManipulator manipulator = root.AddComponent<ObjectManipulator>();
             manipulator.AllowFarManipulation = true;
             
-            // NearInteractionGrabbable - Near 인터랙션 지원
+            // NearInteractionGrabbable
             root.AddComponent<NearInteractionGrabbable>();
             
-            // BoxCollider - 충돌 감지용 (드래그 및 클릭)
+            // BoxCollider - 전체 패널 (배경에서 드래그)
             BoxCollider boxCollider = root.AddComponent<BoxCollider>();
             boxCollider.size = new Vector3(800, 1000, 10);
+            
+            // Background에 CanvasGroup 추가하여 Raycast 차단 해제
+            CanvasGroup bgGroup = bgPanel.AddComponent<CanvasGroup>();
+            bgGroup.blocksRaycasts = false; // UI 클릭이 Background를 통과하도록
 
-            Debug.Log("✅ MRTK 컴포넌트 추가 완료 (ObjectManipulator, NearInteractionGrabbable, BoxCollider)");
+            Debug.Log("✅ MRTK 컴포넌트 추가 완료");
         }
 
         // 9. StepItem 프리팹이 없으면 자동 생성
@@ -199,9 +203,6 @@ public class RecipePanelCreator : EditorWindow
         GameObject stepItemPrefab = AssetDatabase.LoadAssetAtPath("Assets/Prefabs/UI/RecipeStepItem.prefab", typeof(GameObject)) as GameObject;
         if (stepItemPrefab != null)
             panel.stepItemPrefab = stepItemPrefab;
-        
-        // 11. DraggableStepPanel 스크립트 추가
-        root.AddComponent<DraggableStepPanel>();
 
         // 12. Prefab 저장
         string prefabPath = "Assets/Prefabs/UI/RecipePanel.prefab";
