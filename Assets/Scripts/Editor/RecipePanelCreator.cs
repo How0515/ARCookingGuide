@@ -313,7 +313,22 @@ public class RecipePanelCreator : EditorWindow
         // 9. RecipeStepItem 스크립트 추가
         stepItem.AddComponent<RecipeStepItem>();
 
-        // 10. Prefab 저장
+        // 10. MRTK 드래그 컴포넌트 추가
+        if (createMRTKComponents)
+        {
+            // BoxCollider (드래그 영역)
+            BoxCollider boxCollider = stepItem.AddComponent<BoxCollider>();
+            boxCollider.size = new Vector3(700, 100, 10);
+
+            // ObjectManipulator (드래그 기능)
+            ObjectManipulator manipulator = stepItem.AddComponent<ObjectManipulator>();
+            manipulator.AllowFarManipulation = true;
+            
+            // NearInteractionGrabbable (가까이서 잡기)
+            stepItem.AddComponent<NearInteractionGrabbable>();
+        }
+
+        // 11. Prefab 저장
         string prefabPath = "Assets/Prefabs/UI/RecipeStepItem.prefab";
         GameObject savedPrefab = PrefabUtility.SaveAsPrefabAsset(stepItem, prefabPath);
 

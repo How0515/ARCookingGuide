@@ -1,6 +1,8 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using Microsoft.MixedReality.Toolkit.UI;
+using Microsoft.MixedReality.Toolkit.Input;
 
 /// <summary>
 /// 단일 요리 단계 아이템
@@ -16,6 +18,13 @@ public class RecipeStepItem : MonoBehaviour
     private Image stepImage;
     private Toggle completionCheckbox;
     private CanvasGroup canvasGroup;
+
+    [Header("Drag Settings")]
+    [SerializeField] private bool isDraggable = true;
+    private ObjectManipulator objectManipulator;
+    private Transform originalParent;
+    private int originalSiblingIndex;
+    private bool isDetached = false;
 
     private RecipeStepPanel.CookingStep stepData;
     private int stepNumber;
@@ -68,6 +77,33 @@ public class RecipeStepItem : MonoBehaviour
 
         if (canvasGroup == null)
             canvasGroup = GetComponent<CanvasGroup>();
+
+        // 드래그 기능 설정
+        SetupDragFunctionality();
+    }
+
+    /// <summary>
+    /// 드래그 기능 설정
+    /// </summary>
+    private void SetupDragFunctionality()
+    {
+        if (objectManipulator == null)
+            objectManipulator = GetComponent<ObjectManipulator>();
+
+        if (objectManipulator != null)
+        {
+            objectManipulator.enabled = isDraggable;
+            objectManipulator.AllowFarManipulation = true;
+            objectManipulator.OnManipulationStarted.AddListener((eventData) => OnDragStarted());
+            objectManipulator.OnManipulationEnded.AddListener((eventData) => OnDragEnded());
+        }
+
+        // 부모 정보 저장
+        if (transform.parent != null)
+        {
+            originalParent = transform.parent;
+            originalSiblingIndex = transform.GetSiblingIndex();
+        }
     }
 
     /// <summary>
@@ -114,4 +150,106 @@ public class RecipeStepItem : MonoBehaviour
     /// 단계 데이터 반환
     /// </summary>
     public RecipeStepPanel.CookingStep StepData => stepData;
+
+    /// <summary>
+    /// 드래그 시작 핸들러
+    /// </summary>
+    private void OnDragStarted()
+    {
+        if (!isDetached)
+        {
+            DetachFromParent();
+        }
+    }
+
+    /// <summary>
+    /// 드래그 종료 핸들러
+    /// </summary>
+    private void OnDragEnded()
+    {
+        // 드래그 종료 후 처리 (필요시 확장)
+    }
+
+    /// <summary>
+    /// 부모 패널에서 분리
+    /// </summary>
+    public void DetachFromParent()
+    {
+        if (isDetached) return;
+
+        // 부모 정보 저장
+        if (transform.parent != null)
+        {
+            originalParent = transform.parent;
+            originalSiblingIndex = transform.GetSiblingIndex();
+        }
+
+        // 월드 스페이스로 이동
+        RectTransform rectTransform = GetComponent<RectTransform>();
+        Vector3 worldPos = rectTransform.position;
+        Quaternion worldRot = rectTransform.rotation;
+        Vector3 worldScale = rectTransform.lossyScale;
+
+        transform.SetParent(null);
+        rectTransform.position = worldPos;
+        rectTransform.rotation = worldRot;
+        rectTransform.localScale = worldScale;
+
+        // Canvas 추가 (독립적으로 렌더링)
+        Canvas canvas = gameObject.GetComponent<Canvas>();
+        if (canvas == null)
+        {
+            canvas = gameObject.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.WorldSpace;
+            
+            GraphicRaycaster raycaster = gameObject.GetComponent<GraphicRaycaster>();
+            if (raycaster == null)
+                gameObject.AddComponent<GraphicRaycaster>();
+        }
+
+        isDetached = true;
+    }
+
+    /// <summary>
+    /// 원래 부모 패널로 복귀
+    /// </summary>
+    public void ReattachToParent()
+    {
+        if (!isDetached || originalParent == null) return;
+
+        // Canvas 제거
+        Canvas canvas = GetComponent<Canvas>();
+        if (canvas != null)
+            DestroyImmediate(canvas);
+        
+        GraphicRaycaster raycaster = GetComponent<GraphicRaycaster>();
+        if (raycaster != null)
+            DestroyImmediate(raycaster);
+
+        // 부모로 복귀
+        RectTransform rectTransform = GetComponent<RectTransform>();
+        rectTransform.SetParent(originalParent);
+        rectTransform.SetSiblingIndex(originalSiblingIndex);
+        
+        // 로컬 스케일 리셋
+        rectTransform.localScale = Vector3.one;
+        rectTransform.localRotation = Quaternion.identity;
+
+        isDetached = false;
+    }
+
+    /// <summary>
+    /// 드래그 가능 여부 설정
+    /// </summary>
+    public void SetDraggable(bool draggable)
+    {
+        isDraggable = draggable;
+        if (objectManipulator != null)
+            objectManipulator.enabled = draggable;
+    }
+
+    /// <summary>
+    /// 분리 상태 확인
+    /// </summary>
+    public bool IsDetached => isDetached;
 }

@@ -288,4 +288,54 @@ public class RecipeStepPanel : MonoBehaviour
     {
         return stepItems;
     }
+
+    /// <summary>
+    /// 특정 단계를 패널에서 분리
+    /// </summary>
+    public void DetachStep(int stepIndex)
+    {
+        if (stepIndex >= 0 && stepIndex < stepItems.Count)
+        {
+            stepItems[stepIndex].DetachFromParent();
+        }
+    }
+
+    /// <summary>
+    /// 특정 단계를 패널로 복귀
+    /// </summary>
+    public void ReattachStep(int stepIndex)
+    {
+        if (stepIndex >= 0 && stepIndex < stepItems.Count)
+        {
+            stepItems[stepIndex].ReattachToParent();
+        }
+    }
+
+    /// <summary>
+    /// 모든 분리된 단계를 패널로 복귀
+    /// </summary>
+    public void ReattachAllDetachedSteps()
+    {
+        foreach (var stepItem in stepItems)
+        {
+            if (stepItem.IsDetached)
+            {
+                stepItem.ReattachToParent();
+            }
+        }
+    }
+
+    /// <summary>
+    /// 분리된 단계 개수 반환
+    /// </summary>
+    public int GetDetachedStepCount()
+    {
+        int count = 0;
+        foreach (var stepItem in stepItems)
+        {
+            if (stepItem.IsDetached)
+                count++;
+        }
+        return count;
+    }
 }
