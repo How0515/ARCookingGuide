@@ -3,6 +3,7 @@ using UnityEditor;
 using TMPro;
 using UnityEngine.UI;
 using Microsoft.MixedReality.Toolkit.UI;
+using Microsoft.MixedReality.Toolkit.Input;
 
 /// <summary>
 /// Unity 에디터에서 RecipePanel Prefab을 자동으로 생성하는 헬퍼
@@ -68,10 +69,11 @@ public class RecipePanelCreator : EditorWindow
         
         GraphicRaycaster raycaster = root.AddComponent<GraphicRaycaster>();
         
-        // Canvas 크기 설정
+        // Canvas 크기 및 위치 설정
         RectTransform canvasRect = root.GetComponent<RectTransform>();
         canvasRect.sizeDelta = new Vector2(800, 1000);
-        canvasRect.localScale = new Vector3(0.001f, 0.001f, 0.001f); // 0.8m x 1.0m
+        canvasRect.localScale = new Vector3(0.003f, 0.003f, 0.003f);
+        canvasRect.localPosition = new Vector3(0, 0, 2.5f);
 
         // 3. CanvasGroup 추가 (투명도 조절용)
         CanvasGroup canvasGroup = root.AddComponent<CanvasGroup>();
@@ -128,9 +130,16 @@ public class RecipePanelCreator : EditorWindow
         stepsRect.anchoredPosition = new Vector2(0, -150);
         stepsRect.sizeDelta = new Vector2(-40, -180);
 
-        // 참고: VerticalLayoutGroup은 수동으로 추가하세요
-        // Editor에서 LayoutGroup 생성 시 에러 발생하므로 주석 처리
-        // VerticalLayoutGroup 설정이 필요하면 프리팹에서 수동으로 추가
+        // VerticalLayoutGroup 추가 (빈 컨테이너에 추가하므로 에러 없음)
+        VerticalLayoutGroup containerLayout = stepsContainer.AddComponent<VerticalLayoutGroup>();
+        containerLayout.spacing = 10;
+        containerLayout.padding = new RectOffset(10, 10, 10, 10);
+        containerLayout.childForceExpandHeight = false;
+        containerLayout.childControlHeight = true;
+        containerLayout.childControlWidth = true;
+        
+        ContentSizeFitter containerFitter = stepsContainer.AddComponent<ContentSizeFitter>();
+        containerFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
         // 7. Progress Display
         GameObject progressDisplay = CreateUIObject("ProgressDisplay", root.transform);
@@ -155,11 +164,18 @@ public class RecipePanelCreator : EditorWindow
         // 8. MRTK 컴포넌트 추가
         if (createMRTKComponents)
         {
-            // ObjectManipulator - 기본 설정만
+            // ObjectManipulator
             ObjectManipulator manipulator = root.AddComponent<ObjectManipulator>();
             manipulator.AllowFarManipulation = true;
+            
+            // NearInteractionGrabbable - Near 인터랙션 지원
+            root.AddComponent<NearInteractionGrabbable>();
+            
+            // BoxCollider - 충돌 감지용 (드래그 및 클릭)
+            BoxCollider boxCollider = root.AddComponent<BoxCollider>();
+            boxCollider.size = new Vector3(800, 1000, 10);
 
-            Debug.Log("✅ MRTK 컴포넌트 추가 완료");
+            Debug.Log("✅ MRTK 컴포넌트 추가 완료 (ObjectManipulator, NearInteractionGrabbable, BoxCollider)");
         }
 
         // 9. StepItem 프리팹이 없으면 자동 생성
@@ -189,16 +205,15 @@ public class RecipePanelCreator : EditorWindow
 
         // 12. Prefab 저장
         string prefabPath = "Assets/Prefabs/UI/RecipePanel.prefab";
-        PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
+        GameObject savedPrefab = PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
 
         Debug.Log($"✅ RecipePanel 프리팹 생성 완료: {prefabPath}");
 
-        // 13. 생성된 오브젝트 선택
+        // 13. 씬에 배치된 오브젝트 선택
         Selection.activeGameObject = root;
         EditorGUIUtility.PingObject(root);
         
-        // Canvas 강제 업데이트
-        Canvas.ForceUpdateCanvases();
+        Debug.Log("✅ RecipePanel이 씬에 배치되었습니다. Play 버튼으로 테스트하세요!");
     }
 
     private void CreateRecipeStepItemPrefab()
@@ -299,12 +314,16 @@ public class RecipePanelCreator : EditorWindow
 
         // 10. Prefab 저장
         string prefabPath = "Assets/Prefabs/UI/RecipeStepItem.prefab";
-        PrefabUtility.SaveAsPrefabAsset(stepItem, prefabPath);
+        GameObject savedPrefab = PrefabUtility.SaveAsPrefabAsset(stepItem, prefabPath);
 
         Debug.Log($"✅ RecipeStepItem 프리팹 생성 완료: {prefabPath}");
 
-        Selection.activeGameObject = stepItem;
-        EditorGUIUtility.PingObject(stepItem);
+        // 씬에서 StepItem 제거 (프리팹만 남김)
+        DestroyImmediate(stepItem);
+        
+        // 프리팹을 선택하여 표시
+        Selection.activeObject = savedPrefab;
+        EditorGUIUtility.PingObject(savedPrefab);
     }
 
     private GameObject CreateUIObject(string name, Transform parent)

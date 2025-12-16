@@ -49,10 +49,37 @@ public class RecipeStepPanel : MonoBehaviour
         if (canvasGroup != null)
             canvasGroup.alpha = defaultAlpha;
 
+        // Canvas Event Camera 자동 설정
+        SetupCanvasEventCamera();
+
         // StepsContainer에 LayoutGroup 자동 추가
         SetupStepsContainerLayout();
         
         InitializeUI();
+    }
+
+    /// <summary>
+    /// Canvas의 Event Camera를 자동으로 설정
+    /// </summary>
+    private void SetupCanvasEventCamera()
+    {
+        Canvas canvas = GetComponent<Canvas>();
+        if (canvas != null && canvas.renderMode == RenderMode.WorldSpace)
+        {
+            if (canvas.worldCamera == null)
+            {
+                canvas.worldCamera = Camera.main;
+                Debug.Log("✅ Canvas Event Camera 자동 설정: Main Camera");
+            }
+        }
+
+        // Graphic Raycaster 확인
+        GraphicRaycaster raycaster = GetComponent<GraphicRaycaster>();
+        if (raycaster == null)
+        {
+            gameObject.AddComponent<GraphicRaycaster>();
+            Debug.Log("✅ Graphic Raycaster 자동 추가");
+        }
     }
 
     /// <summary>
@@ -63,23 +90,22 @@ public class RecipeStepPanel : MonoBehaviour
         if (stepsContainer == null)
             return;
 
-        // 기존 LayoutGroup이 없으면 추가
-        VerticalLayoutGroup layout = stepsContainer.GetComponent<VerticalLayoutGroup>();
-        if (layout == null)
+        // 이미 LayoutGroup이 있으면 스킵 (에러 방지)
+        if (stepsContainer.GetComponent<VerticalLayoutGroup>() != null)
+            return;
+
+        // 자식이 없을 때만 LayoutGroup 추가
+        if (stepsContainer.childCount == 0)
         {
-            layout = stepsContainer.gameObject.AddComponent<VerticalLayoutGroup>();
+            VerticalLayoutGroup layout = stepsContainer.gameObject.AddComponent<VerticalLayoutGroup>();
             layout.spacing = 10;
             layout.padding = new RectOffset(10, 10, 10, 10);
             layout.childForceExpandHeight = false;
             layout.childControlHeight = true;
             layout.childControlWidth = true;
-        }
 
-        // ContentSizeFitter도 추가
-        ContentSizeFitter fitter = stepsContainer.GetComponent<ContentSizeFitter>();
-        if (fitter == null)
-        {
-            fitter = stepsContainer.gameObject.AddComponent<ContentSizeFitter>();
+            // ContentSizeFitter도 추가
+            ContentSizeFitter fitter = stepsContainer.gameObject.AddComponent<ContentSizeFitter>();
             fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
         }
     }
@@ -89,6 +115,12 @@ public class RecipeStepPanel : MonoBehaviour
     /// </summary>
     private void InitializeUI()
     {
+        // 샘플 데이터가 없으면 자동 생성
+        if (stepList.Count == 0)
+        {
+            CreateSampleSteps();
+        }
+
         // 레시피 이름과 재료 설정
         if (recipeNameText != null)
             recipeNameText.text = recipeName;
@@ -113,6 +145,64 @@ public class RecipeStepPanel : MonoBehaviour
         }
 
         UpdateProgressDisplay();
+    }
+
+    /// <summary>
+    /// 샘플 6단계 데이터 생성
+    /// </summary>
+    private void CreateSampleSteps()
+    {
+        stepList = new List<CookingStep>
+        {
+            new CookingStep
+            {
+                title = "재료 준비",
+                ingredients = "파스타 면 200g, 토마토 소스 1컵, 올리브유 2스푼, 마늘 3쪽, 양파 1/2개, 파슬리 약간",
+                heatLevel = "준비",
+                timerSeconds = 0,
+                description = "모든 재료를 깨끗이 씻고 손질합니다. 마늘과 양파는 잘게 다집니다."
+            },
+            new CookingStep
+            {
+                title = "물 끓이기",
+                ingredients = "",
+                heatLevel = "강불",
+                timerSeconds = 300,
+                description = "큰 냄비에 물을 충분히 붓고 소금을 한 꼬집 넣어 끓입니다."
+            },
+            new CookingStep
+            {
+                title = "면 삶기",
+                ingredients = "",
+                heatLevel = "중불",
+                timerSeconds = 480,
+                description = "끓는 물에 파스타 면을 넣고 8분간 삶습니다. 알덴테 상태가 되도록 합니다."
+            },
+            new CookingStep
+            {
+                title = "소스 만들기",
+                ingredients = "",
+                heatLevel = "중불",
+                timerSeconds = 420,
+                description = "팬에 올리브유를 두르고 마늘과 양파를 볶다가 토마토 소스를 넣고 7분간 끓입니다."
+            },
+            new CookingStep
+            {
+                title = "면과 소스 섞기",
+                ingredients = "",
+                heatLevel = "약불",
+                timerSeconds = 120,
+                description = "삶은 면의 물기를 빼고 소스와 함께 2분간 버무립니다."
+            },
+            new CookingStep
+            {
+                title = "플레이팅",
+                ingredients = "",
+                heatLevel = "완료",
+                timerSeconds = 0,
+                description = "접시에 담고 파슬리를 뿌려 완성합니다. 취향에 따라 파마산 치즈를 추가하세요."
+            }
+        };
     }
 
     /// <summary>
