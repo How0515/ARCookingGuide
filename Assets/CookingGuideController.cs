@@ -4,6 +4,10 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.Video;
 
+/// <summary>
+/// 기존 호환성을 위해 유지하는 컨트롤러
+/// 새로운 RecipeStepPanel과 호환
+/// </summary>
 public class CookingGuideController : MonoBehaviour
 {
     [System.Serializable]
@@ -23,13 +27,25 @@ public class CookingGuideController : MonoBehaviour
     public TextMeshPro textTimer;
     public VideoPlayer videoPlayer;
 
+    // 새로운 패널 기반 시스템과 호환
+    private RecipeStepPanel recipePanelUI;
+
     private int currentStepIndex = 0;
     private float currentTimer = 0f;
     private bool isTimerRunning = false;
+    private float lastClickTime = 0f;
+    private float clickCooldown = 1f;
 
     void Start()
     {
-        UpdateUI();
+        // RecipeStepPanel이 씬에 있으면 사용
+        recipePanelUI = FindObjectOfType<RecipeStepPanel>();
+        
+        // 기존 UI가 있으면 업데이트
+        if (recipePanelUI == null)
+        {
+            UpdateUI();
+        }
     }
 
     void Update()
@@ -42,11 +58,10 @@ public class CookingGuideController : MonoBehaviour
         else if (currentTimer <= 0 && isTimerRunning)
         {
             isTimerRunning = false;
-            textTimer.text = "00:00 - 완료!";
+            if(textTimer) textTimer.text = "00:00 - 완료!";
         }
     }
-    private float lastClickTime = 0f;
-    private float clickCooldown = 1f;
+
     public void NextStep()
     {
         if (Time.time - lastClickTime < clickCooldown) return;
