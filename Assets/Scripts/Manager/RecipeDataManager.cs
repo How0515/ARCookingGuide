@@ -109,11 +109,35 @@ public class RecipeDataManager : MonoBehaviour
     }
 
     /// <summary>
-    /// CSV 라인을 필드로 분리
+    /// CSV 라인을 필드로 분리 (큰따옴표 처리)
     /// </summary>
     private string[] ParseCSVLine(string line)
     {
-        return line.Split(',');
+        List<string> fields = new List<string>();
+        bool inQuotes = false;
+        string currentField = "";
+
+        for (int i = 0; i < line.Length; i++)
+        {
+            char c = line[i];
+
+            if (c == '"')
+            {
+                inQuotes = !inQuotes;
+            }
+            else if (c == ',' && !inQuotes)
+            {
+                fields.Add(currentField);
+                currentField = "";
+            }
+            else
+            {
+                currentField += c;
+            }
+        }
+        fields.Add(currentField); // 마지막 필드 추가
+
+        return fields.ToArray();
     }
 
     /// <summary>
@@ -126,25 +150,30 @@ public class RecipeDataManager : MonoBehaviour
         string[] stepArray = stepsText.Split(';');
         string[] imageArray = imagesText.Split(';');
 
+        int validStepIndex = 0; // 실제 유효한 단계 카운트
+
         for (int i = 0; i < stepArray.Length; i++)
         {
-            if (string.IsNullOrWhiteSpace(stepArray[i]))
+            string trimmedStep = stepArray[i].Trim();
+            
+            if (string.IsNullOrWhiteSpace(trimmedStep))
                 continue;
 
             CookingStep step = new CookingStep();
-            step.title = stepArray[i].Trim();
+            step.title = trimmedStep;
             step.ingredients = ""; // 단계별로 나눠서 가져올 수 없음
             step.heatLevel = ""; // csv파일에서 가져올 없는 값
             step.timerSeconds = 300f;  // 기본 5분
 
-            // 이미지 로드
-            if (i < imageArray.Length)
+            // 이미지 로드 (유효한 단계 인덱스 사용)
+            if (validStepIndex < imageArray.Length)
             {
-                string imageName = imageArray[i].Trim().Replace(".jpg", "").Replace(".png", "");
+                string imageName = imageArray[validStepIndex].Trim().Replace(".jpg", "").Replace(".png", "");
                 step.stepImage = Resources.Load<Sprite>($"RecipeDB/Images/{imageName}");
             }
 
             steps.Add(step);
+            validStepIndex++; // 유효한 단계만 카운트
         }
 
         return steps;
