@@ -37,6 +37,7 @@ public class RecipeStepItem : MonoBehaviour
     private Vector3 originalAnchoredPosition;  // 원래 UI 위치 저장 (x, y, z 모두)
     private bool isDetached = false;
     private bool isDragging = false;
+    private Canvas separatedCanvas;  // ★ 분리 후 생성된 Canvas 참조
 
     // 분리 후에도 진행률 업데이트를 위해 부모 패널 참조 저장
     private RecipeStepPanel parentPanel;
@@ -282,6 +283,25 @@ public class RecipeStepItem : MonoBehaviour
     }
 
     /// <summary>
+    /// ★ LateUpdate: 분리된 상태에서 Canvas 위치를 RecipeStepItem과 동기화
+    /// ObjectManipulator가 RecipeStepItem을 움직일 때, Canvas도 함께 움직이도록
+    /// </summary>
+    private void LateUpdate()
+    {
+        if (isDetached && separatedCanvas != null)
+        {
+            // Canvas의 위치/회전/스케일을 RecipeStepItem과 항상 같게 유지
+            RectTransform canvasRect = separatedCanvas.GetComponent<RectTransform>();
+            RectTransform itemRect = GetComponent<RectTransform>();
+            
+            canvasRect.position = itemRect.position;
+            canvasRect.rotation = itemRect.rotation;
+            canvasRect.localScale = itemRect.localScale;
+        }
+    }
+
+    /// <summary>
+    /// <summary>
     /// 단계 완료 설정
     /// </summary>
     public void SetCompleted(bool completed)
@@ -340,13 +360,11 @@ public class RecipeStepItem : MonoBehaviour
         // 부모에서 분리
         transform.SetParent(null);
         
-        // ★ 월드 좌표 및 변환 복원 (Z축 뒤로 안 가도록)
+        // ★ RecipeStepItem의 위치로 관리 (ObjectManipulator가 이것을 움직임)
         rectTransform.position = worldPos;
         rectTransform.rotation = worldRot;
         rectTransform.localScale = worldScale;
-        
-        // anchoredPosition3D도 유지 (UI 기준 위치)
-        rectTransform.anchoredPosition3D = Vector3.zero;  // 로컬에서는 중심
+        // anchoredPosition3D는 설정하지 않음 - position으로만 관리!
 
         // ★ Canvas 추가 (독립적 렌더링 필수)
         Canvas canvas = gameObject.GetComponent<Canvas>();
@@ -356,15 +374,18 @@ public class RecipeStepItem : MonoBehaviour
             canvas.renderMode = RenderMode.WorldSpace;
             canvas.worldCamera = Camera.main;  // EventCamera 설정
             
-            // ★ Canvas의 RectTransform을 현재 위치에 맞춰야 함
-            // (WorldSpace Canvas의 위치는 Canvas의 RectTransform에 의존)
+            // ★ Canvas의 월드 위치를 원래 UI 위치로 설정 (카메라에 보이게!)
             RectTransform canvasRect = canvas.GetComponent<RectTransform>();
-            canvasRect.position = worldPos;
+            canvasRect.position = worldPos;  // ← 원래 UI 위치
             canvasRect.rotation = worldRot;
             canvasRect.localScale = worldScale;
+            // anchoredPosition3D는 설정하지 않음 - position으로만 관리!
             
             Debug.Log($"🎨 [Step #{stepNumber}] Canvas 추가 (WorldSpace) - Pos: {worldPos}");
         }
+        
+        // ★ Canvas 참조 저장 (LateUpdate에서 동기화용)
+        separatedCanvas = canvas;
 
         GraphicRaycaster raycaster = gameObject.GetComponent<GraphicRaycaster>();
         if (raycaster == null)
