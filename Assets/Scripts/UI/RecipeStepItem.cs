@@ -33,6 +33,7 @@ public class RecipeStepItem : MonoBehaviour
     private ObjectManipulator objectManipulator;
     private Transform originalParent;
     private int originalSiblingIndex;
+    private Vector3 originalAnchoredPosition;  // 원래 UI 위치 저장 (x, y, z 모두)
     private bool isDetached = false;
     private bool isDragging = false;
 
@@ -149,10 +150,10 @@ public class RecipeStepItem : MonoBehaviour
 
         if (objectManipulator != null)
         {
-            objectManipulator.enabled = isDraggable;
+            // 초기에는 비활성화 (MoveButton 클릭 시에만 활성화)
+            objectManipulator.enabled = false;
             objectManipulator.AllowFarManipulation = true;
-            objectManipulator.OnManipulationStarted.AddListener((eventData) => OnDragStarted());
-            objectManipulator.OnManipulationEnded.AddListener((eventData) => OnDragEnded());
+            // OnManipulationStarted 이벤트는 제거 (MoveButton으로만 분리하도록)
         }
 
         // 부모 정보 저장
@@ -160,20 +161,31 @@ public class RecipeStepItem : MonoBehaviour
         {
             originalParent = transform.parent;
             originalSiblingIndex = transform.GetSiblingIndex();
+            
+            // UI 위치 저장 (x, y, z 모두)
+            RectTransform rect = GetComponent<RectTransform>();
+            if (rect != null)
+                originalAnchoredPosition = rect.anchoredPosition3D;  // Vector3 사용!
         }
     }
 
     /// <summary>
     /// 손모양 버튼 클릭 이벤트
-    /// 분리되지 않았으면 분리, 이미 분리되었으면 드래그 가능 상태 유지
+    /// 분리되지 않았으면 분리하고 드래그 활성화
     /// </summary>
     private void OnMoveButtonClicked()
     {
         if (!isDetached)
         {
             DetachFromParent();
+            
+            // 분리 후 ObjectManipulator 활성화 (이제 드래그 가능)
+            if (objectManipulator != null)
+            {
+                objectManipulator.enabled = true;
+                Debug.Log($"✅ [Step #{stepNumber}] ObjectManipulator 활성화 - 드래그 가능");
+            }
         }
-        // 분리된 상태에서는 ObjectManipulator가 드래그를 처리
     }
 
     /// <summary>
@@ -238,24 +250,7 @@ public class RecipeStepItem : MonoBehaviour
     /// </summary>
     public RecipeStepPanel.CookingStep StepData => stepData;
 
-    /// <summary>
-    /// 드래그 시작 핸들러
-    /// </summary>
-    private void OnDragStarted()
-    {
-        if (!isDetached)
-        {
-            DetachFromParent();
-        }
-    }
 
-    /// <summary>
-    /// 드래그 종료 핸들러
-    /// </summary>
-    private void OnDragEnded()
-    {
-        // 드래그 종료 후 처리 (필요시 확장)
-    }
 
     /// <summary>
     /// 부모 패널에서 분리
@@ -264,19 +259,24 @@ public class RecipeStepItem : MonoBehaviour
     {
         if (isDetached) return;
 
-        // 부모 정보 저장
+        RectTransform rectTransform = GetComponent<RectTransform>();
+        
+        // 부모 정보 및 UI 위치 저장
         if (transform.parent != null)
         {
             originalParent = transform.parent;
             originalSiblingIndex = transform.GetSiblingIndex();
+            originalAnchoredPosition = rectTransform.anchoredPosition3D;  // z까지 저장!
+            
+            Debug.Log($"💾 [Step #{stepNumber}] 위치 저장 - AnchoredPos3D: {originalAnchoredPosition}, SiblingIndex: {originalSiblingIndex}");
         }
 
-        // 월드 스페이스로 이동
-        RectTransform rectTransform = GetComponent<RectTransform>();
+        // 월드 좌표 저장 (분리 시 위치 유지용)
         Vector3 worldPos = rectTransform.position;
         Quaternion worldRot = rectTransform.rotation;
         Vector3 worldScale = rectTransform.lossyScale;
 
+        // 부모에서 분리
         transform.SetParent(null);
         rectTransform.position = worldPos;
         rectTransform.rotation = worldRot;
@@ -307,6 +307,13 @@ public class RecipeStepItem : MonoBehaviour
     {
         if (!isDetached || originalParent == null) return;
 
+        // ObjectManipulator 비활성화 (복귀 후 드래그 불가)
+        if (objectManipulator != null)
+        {
+            objectManipulator.enabled = false;
+            Debug.Log($"❌ [Step #{stepNumber}] ObjectManipulator 비활성화");
+        }
+
         // GraphicRaycaster를 먼저 제거 (Canvas 의존성 때문)
         GraphicRaycaster raycaster = GetComponent<GraphicRaycaster>();
         if (raycaster != null)
@@ -322,9 +329,14 @@ public class RecipeStepItem : MonoBehaviour
         rectTransform.SetParent(originalParent);
         rectTransform.SetSiblingIndex(originalSiblingIndex);
         
-        // 로컬 스케일 리셋
+        // 로컬 변환 리셋
         rectTransform.localScale = Vector3.one;
         rectTransform.localRotation = Quaternion.identity;
+        
+        // 원래 UI 위치 복원 (x, y, z 모두 복원!)
+        rectTransform.anchoredPosition3D = originalAnchoredPosition;
+        
+        Debug.Log($"📍 [Step #{stepNumber}] 위치 복원 - AnchoredPos3D: {originalAnchoredPosition}");
 
         isDetached = false;
 
