@@ -1330,6 +1330,7 @@ GameObject:
   - component: {fileID: 1621972010534884537}
   - component: {fileID: 4121951781679628623}
   - component: {fileID: 5416952757116689857}
+  - component: {fileID: 8982134495208174673}
   m_Layer: 0
   m_Name: Prefab
   m_TagString: Untagged
@@ -1609,6 +1610,27 @@ MonoBehaviour:
           m_CallState: 2
   persistentKeywords: 0
   speechConfirmationTooltipPrefab: {fileID: 0}
+--- !u!65 &8982134495208174673
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3404384218588095732}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 0
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &3735563975708709934
 GameObject:
   m_ObjectHideFlags: 0
@@ -4370,7 +4392,7 @@ BoxCollider:
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 0.15, y: 0.1, z: 0.61}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Center: {x: -0.02, y: -0.01, z: -0.3}
 --- !u!114 &8780042192593186916
 MonoBehaviour:
   m_ObjectHideFlags: 0

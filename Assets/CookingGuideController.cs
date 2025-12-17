@@ -1,108 +1,73 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using TMPro;
-using UnityEngine.Video;
+using System.Collections.Generic;
 
 public class CookingGuideController : MonoBehaviour
 {
-    [System.Serializable]
-    public struct CookingStep
+    public static CookingGuideController Instance; // 어디서든 접근 가능하게 싱글톤 처리
+
+    [Header("Data")]
+    public List<RecipeStep> recipeSteps; // 인스펙터에서 단계별 내용 입력
+    public int currentStepIndex = 0;
+
+    [Header("References")]
+    public RecipeBoard recipeBoard;    // 중앙 메인 보드
+    public HeadHUD headHUD;            // 우측 상단 HUD
+    public TimerManager timerManager;  // 좌측 타이머 관리자
+
+    private void Awake()
     {
-        public string title;
-        [TextArea] public string ingredients;
-        public string heatLevel;
-        public float timerSeconds;
-        public VideoClip videoClip;
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
     }
 
-    public List<CookingStep> stepList;
-    public TextMeshPro textTitle;
-    public TextMeshPro textIngredients;
-    public TextMeshPro textHeat;
-    public TextMeshPro textTimer;
-    public VideoPlayer videoPlayer;
-
-    private int currentStepIndex = 0;
-    private float currentTimer = 0f;
-    private bool isTimerRunning = false;
-
-    void Start()
+    private void Start()
     {
-        UpdateUI();
+        // 시작 시 0번 단계 보여주기
+        UpdateAllUI();
     }
 
-    void Update()
+    // [다음] 버튼이나 음성인식으로 호출할 함수
+    public void GoToNextStep()
     {
-        if (isTimerRunning && currentTimer > 0)
-        {
-            currentTimer -= Time.deltaTime;
-            UpdateTimerText();
-        }
-        else if (currentTimer <= 0 && isTimerRunning)
-        {
-            isTimerRunning = false;
-            textTimer.text = "00:00 - 완료!";
-        }
-    }
-    private float lastClickTime = 0f;
-    private float clickCooldown = 1f;
-    public void NextStep()
-    {
-        if (Time.time - lastClickTime < clickCooldown) return;
-        
-        lastClickTime = Time.time;
-
-        if (currentStepIndex < stepList.Count - 1)
+        if (currentStepIndex < recipeSteps.Count - 1)
         {
             currentStepIndex++;
-            UpdateUI();
-            Debug.Log("다음 단계로 이동: " + currentStepIndex);
-        }
-    }
-
-    public void StartTimer()
-    {
-        Debug.Log("타이머 시작 시도! 현재 설정된 시간: " + currentTimer);
-        if (currentTimer > 0)
-        {
-            isTimerRunning = true;
-            Debug.Log("타이머가 실행 상태로 변경되었습니다.");
+            UpdateAllUI();
         }
         else
         {
-            Debug.Log("설정된 시간이 0이라서 시작할 수 없습니다.");
+            Debug.Log("요리 완료!");
+            // 요리 완료 UI 띄우기 로직 추가 가능
         }
     }
 
-    void UpdateUI()
+    // [이전] 단계 (필요시)
+    public void GoToPrevStep()
     {
-        if (stepList.Count == 0) return;
-        CookingStep currentData = stepList[currentStepIndex];
-        
-        if(textTitle) textTitle.text = currentData.title;
-        if(textIngredients) textIngredients.text = currentData.ingredients;
-        if(textHeat) textHeat.text = currentData.heatLevel;
-
-        if(videoPlayer && currentData.videoClip != null)
+        if (currentStepIndex > 0)
         {
-            videoPlayer.clip = currentData.videoClip;
-            videoPlayer.Play();
-        }
-
-        if (currentData.timerSeconds > 0)
-        {
-            currentTimer = currentData.timerSeconds;
-            isTimerRunning = false; 
-            if(textTimer) textTimer.gameObject.SetActive(true);
-            UpdateTimerText();
+            currentStepIndex--;
+            UpdateAllUI();
         }
     }
 
-    void UpdateTimerText()
+    // 모든 UI 갱신 로직
+    private void UpdateAllUI()
     {
-        int minutes = Mathf.FloorToInt(currentTimer / 60F);
-        int seconds = Mathf.FloorToInt(currentTimer % 60F);
-        if(textTimer) textTimer.text = string.Format("{0:00}:{1:00}", minutes, seconds);
+        RecipeStep currentStep = recipeSteps[currentStepIndex];
+
+        // 1. 중앙 보드 갱신
+        recipeBoard.UpdateBoard(currentStep);
+
+        // 2. 헤드 HUD (진행률) 갱신
+        float progress = (float)(currentStepIndex + 1) / recipeSteps.Count;
+        headHUD.UpdateHUD(currentStepIndex + 1, recipeSteps.Count, currentStep.stepTitle, progress);
+
+        // 3. 타이머 자동 생성 (시간 설정이 있는 단계라면)
+        if (currentStep.timerSeconds > 0)
+        {
+            // 타이머 매니저에게 요청 (좌측 상단에 띄우기)
+            timerManager.SpawnTimer(currentStep.timerSeconds, currentStep.stepTitle);
+        }
     }
 }
