@@ -30,7 +30,7 @@ public class RecipeStepItem : MonoBehaviour
 
     [Header("Drag Settings")]
     [SerializeField] private bool isDraggable = true;
-    private ObjectManipulator objectManipulator;
+    private ObjectManipulator moveButtonManipulator;  // MoveButton의 ObjectManipulator
     private Transform originalParent;
     private int originalSiblingIndex;
     private Vector3 originalAnchoredPosition;  // 원래 UI 위치 저장 (x, y, z 모두)
@@ -126,6 +126,21 @@ public class RecipeStepItem : MonoBehaviour
             moveButton = moveButtonTrans.GetComponent<Button>();
             if (moveButton != null)
                 moveButton.onClick.AddListener(OnMoveButtonClicked);
+            
+            // MoveButton에 ObjectManipulator 추가 (없으면)
+            moveButtonManipulator = moveButtonTrans.GetComponent<ObjectManipulator>();
+            if (moveButtonManipulator == null)
+            {
+                moveButtonManipulator = moveButtonTrans.gameObject.AddComponent<ObjectManipulator>();
+                Debug.Log($"✅ [Step #{stepNumber}] MoveButton에 ObjectManipulator 추가");
+            }
+            
+            // HostTransform 설정: MoveButton을 드래그하면 RecipeStepItem이 움직임
+            moveButtonManipulator.HostTransform = transform;
+            moveButtonManipulator.AllowFarManipulation = true;
+            moveButtonManipulator.enabled = false;  // 초기에는 비활성화
+            
+            Debug.Log($"🎯 [Step #{stepNumber}] ObjectManipulator.HostTransform = {transform.name}");
         }
 
         if (deleteButtonTrans != null && deleteButton == null)
@@ -141,22 +156,11 @@ public class RecipeStepItem : MonoBehaviour
     }
 
     /// <summary>
-    /// 드래그 기능 설정
+    /// 드래그 기능 설정 (부모 정보 저장)
     /// </summary>
     private void SetupDragFunctionality()
     {
-        if (objectManipulator == null)
-            objectManipulator = GetComponent<ObjectManipulator>();
-
-        if (objectManipulator != null)
-        {
-            // 초기에는 비활성화 (MoveButton 클릭 시에만 활성화)
-            objectManipulator.enabled = false;
-            objectManipulator.AllowFarManipulation = true;
-            // OnManipulationStarted 이벤트는 제거 (MoveButton으로만 분리하도록)
-        }
-
-        // 부모 정보 저장
+        // ObjectManipulator는 MoveButton에 있으므로 여기서는 부모 정보만 저장
         if (transform.parent != null)
         {
             originalParent = transform.parent;
@@ -179,11 +183,11 @@ public class RecipeStepItem : MonoBehaviour
         {
             DetachFromParent();
             
-            // 분리 후 ObjectManipulator 활성화 (이제 드래그 가능)
-            if (objectManipulator != null)
+            // 분리 후 MoveButton의 ObjectManipulator 활성화 (파란 버튼만 드래그 가능)
+            if (moveButtonManipulator != null)
             {
-                objectManipulator.enabled = true;
-                Debug.Log($"✅ [Step #{stepNumber}] ObjectManipulator 활성화 - 드래그 가능");
+                moveButtonManipulator.enabled = true;
+                Debug.Log($"✅ [Step #{stepNumber}] MoveButton ObjectManipulator 활성화 - 파란 버튼 드래그 가능");
             }
         }
     }
@@ -294,6 +298,16 @@ public class RecipeStepItem : MonoBehaviour
                 gameObject.AddComponent<GraphicRaycaster>();
         }
 
+        // CanvasGroup 설정: Raycast 차단하지 않도록 (ObjectManipulator가 계속 작동하게)
+        if (canvasGroup == null)
+            canvasGroup = GetComponent<CanvasGroup>();
+        
+        if (canvasGroup != null)
+        {
+            canvasGroup.blocksRaycasts = false;  // 중요: 이것이 있어야 분리 후 드래그 가능
+            Debug.Log($"🔓 [Step #{stepNumber}] CanvasGroup.blocksRaycasts = false (드래그 계속 가능)");
+        }
+
         isDetached = true;
 
         // 분리 후 버튼 표시 전환
@@ -307,11 +321,11 @@ public class RecipeStepItem : MonoBehaviour
     {
         if (!isDetached || originalParent == null) return;
 
-        // ObjectManipulator 비활성화 (복귀 후 드래그 불가)
-        if (objectManipulator != null)
+        // MoveButton ObjectManipulator 비활성화 (복귀 후 드래그 불가)
+        if (moveButtonManipulator != null)
         {
-            objectManipulator.enabled = false;
-            Debug.Log($"❌ [Step #{stepNumber}] ObjectManipulator 비활성화");
+            moveButtonManipulator.enabled = false;
+            Debug.Log($"❌ [Step #{stepNumber}] MoveButton ObjectManipulator 비활성화");
         }
 
         // GraphicRaycaster를 먼저 제거 (Canvas 의존성 때문)
@@ -323,6 +337,13 @@ public class RecipeStepItem : MonoBehaviour
         Canvas canvas = GetComponent<Canvas>();
         if (canvas != null)
             DestroyImmediate(canvas);
+
+        // CanvasGroup Raycast 차단 복원
+        if (canvasGroup != null)
+        {
+            canvasGroup.blocksRaycasts = true;  // 복귀 후 다시 활성화
+            Debug.Log($"🔒 [Step #{stepNumber}] CanvasGroup.blocksRaycasts = true (복귀)");
+        }
 
         // 부모로 복귀
         RectTransform rectTransform = GetComponent<RectTransform>();
@@ -365,8 +386,8 @@ public class RecipeStepItem : MonoBehaviour
     public void SetDraggable(bool draggable)
     {
         isDraggable = draggable;
-        if (objectManipulator != null)
-            objectManipulator.enabled = draggable;
+        if (moveButtonManipulator != null)
+            moveButtonManipulator.enabled = draggable;
     }
 
     /// <summary>

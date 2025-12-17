@@ -349,19 +349,26 @@ public class RecipePanelCreator : EditorWindow
         // 11. RecipeStepItem 스크립트 추가
         stepItem.AddComponent<RecipeStepItem>();
 
-        // 12. MRTK 드래그 컴포넌트 추가
+        // 12. MRTK 컴포넌트 추가
+        // 참고: ObjectManipulator는 MoveButton에 런타임에 추가됨 (RecipeStepItem.cs)
         if (createMRTKComponents)
         {
-            // BoxCollider (드래그 영역)
-            BoxCollider boxCollider = stepItem.AddComponent<BoxCollider>();
-            boxCollider.size = new Vector3(700, 100, 10);
-
-            // ObjectManipulator (드래그 기능)
-            ObjectManipulator manipulator = stepItem.AddComponent<ObjectManipulator>();
-            manipulator.AllowFarManipulation = true;
+            // MoveButton에 BoxCollider 추가 (드래그 영역)
+            Transform moveButtonTrans = stepItem.transform.Find("MoveButton");
+            if (moveButtonTrans != null)
+            {
+                BoxCollider boxCollider = moveButtonTrans.gameObject.AddComponent<BoxCollider>();
+                // MoveButton 크기에 맞게 설정 (40x40px, scale 0.003 기준)
+                boxCollider.size = new Vector3(0.15f, 0.15f, 0.01f);  // 약간 여유있게
+                Debug.Log("✅ MoveButton에 BoxCollider 추가");
+            }
             
-            // NearInteractionGrabbable (가까이서 잡기)
-            stepItem.AddComponent<NearInteractionGrabbable>();
+            // NearInteractionGrabbable을 MoveButton에 추가
+            if (moveButtonTrans != null)
+            {
+                moveButtonTrans.gameObject.AddComponent<NearInteractionGrabbable>();
+                Debug.Log("✅ MoveButton에 NearInteractionGrabbable 추가");
+            }
         }
 
         // 13. Prefab 저장
