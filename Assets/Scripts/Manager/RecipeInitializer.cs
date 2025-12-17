@@ -1,11 +1,12 @@
 using System.Collections.Generic;
 using UnityEngine;
+using System.Reflection;
 
 /// <summary>
 /// 레시피 데이터를 CookingGuideController에 할당하는 초기화 스크립트
 /// - RecipeDataManager에서 데이터 가져오기
 /// - CookingGuideController.stepList에 할당
-/// - 단순 할당만 담당 (UI 변경 없음)
+/// - 레시피 변경 시 상태 초기화 처리
 /// </summary>
 public class RecipeInitializer : MonoBehaviour
 {
@@ -49,6 +50,12 @@ public class RecipeInitializer : MonoBehaviour
             return;
         }
 
+        Debug.Log($"🔍 '{selectedRecipeName}' 로드: {recipeSteps.Count}단계");
+        for (int i = 0; i < recipeSteps.Count; i++)
+        {
+            Debug.Log($"  Step {i}: {recipeSteps[i].title}");
+        }
+
         // 2. RecipeDataManager.CookingStep을 CookingGuideController.CookingStep으로 변환
         List<CookingGuideController.CookingStep> convertedSteps = 
             new List<CookingGuideController.CookingStep>();
@@ -68,6 +75,15 @@ public class RecipeInitializer : MonoBehaviour
 
         // 3. CookingGuideController.stepList에 할당
         cookingController.stepList = convertedSteps;
+
+        // 4. private 변수들 Reflection으로 초기화
+        var type = cookingController.GetType();
+        type.GetField("currentStepIndex", BindingFlags.NonPublic | BindingFlags.Instance)?.SetValue(cookingController, 0);
+        type.GetField("currentTimer", BindingFlags.NonPublic | BindingFlags.Instance)?.SetValue(cookingController, 0f);
+        type.GetField("isTimerRunning", BindingFlags.NonPublic | BindingFlags.Instance)?.SetValue(cookingController, false);
+        
+        // 5. UI 업데이트
+        type.GetMethod("UpdateUI", BindingFlags.NonPublic | BindingFlags.Instance)?.Invoke(cookingController, null);
 
         Debug.Log($"✅ '{selectedRecipeName}' 레시피 로드 완료 ({convertedSteps.Count}단계)");
     }
