@@ -286,26 +286,31 @@ public class RecipeStepItem : MonoBehaviour
         rectTransform.rotation = worldRot;
         rectTransform.localScale = worldScale;
 
-        // Canvas 추가 (독립적으로 렌더링)
+        // ★ Canvas 추가 (독립적 렌더링 필수)
         Canvas canvas = gameObject.GetComponent<Canvas>();
         if (canvas == null)
         {
             canvas = gameObject.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.WorldSpace;
-            
-            GraphicRaycaster raycaster = gameObject.GetComponent<GraphicRaycaster>();
-            if (raycaster == null)
-                gameObject.AddComponent<GraphicRaycaster>();
+            canvas.worldCamera = Camera.main;  // EventCamera 설정
+            Debug.Log($"🎨 [Step #{stepNumber}] Canvas 추가 (WorldSpace)");
         }
 
-        // CanvasGroup 설정: Raycast 차단하지 않도록 (ObjectManipulator가 계속 작동하게)
-        if (canvasGroup == null)
-            canvasGroup = GetComponent<CanvasGroup>();
-        
+        GraphicRaycaster raycaster = gameObject.GetComponent<GraphicRaycaster>();
+        if (raycaster == null)
+        {
+            gameObject.AddComponent<GraphicRaycaster>();
+            Debug.Log($"📍 [Step #{stepNumber}] GraphicRaycaster 추가");
+        }
+
+        // ★ blocksRaycasts = true 유지!
+        // SetParent(null)로 부모가 없으므로, 자체 Canvas가 입력을 처리해야 함
+        // → GraphicRaycaster가 모든 UI 이벤트(드래그, 버튼 클릭) 처리
+        // → ObjectManipulator는 별개로 입력 감지 (둘이 충돌하지 않음)
         if (canvasGroup != null)
         {
-            canvasGroup.blocksRaycasts = false;  // 중요: 이것이 있어야 분리 후 드래그 가능
-            Debug.Log($"🔓 [Step #{stepNumber}] CanvasGroup.blocksRaycasts = false (드래그 계속 가능)");
+            canvasGroup.blocksRaycasts = true;  // ← true로 변경!
+            Debug.Log($"🔒 [Step #{stepNumber}] CanvasGroup.blocksRaycasts = true (UI 이벤트 처리)");
         }
 
         isDetached = true;
@@ -328,21 +333,28 @@ public class RecipeStepItem : MonoBehaviour
             Debug.Log($"❌ [Step #{stepNumber}] MoveButton ObjectManipulator 비활성화");
         }
 
-        // GraphicRaycaster를 먼저 제거 (Canvas 의존성 때문)
+        // ★ 분리 시 추가된 Canvas/GraphicRaycaster 제거
+        // (부모 패널의 Canvas로 렌더링하도록)
         GraphicRaycaster raycaster = GetComponent<GraphicRaycaster>();
         if (raycaster != null)
+        {
             DestroyImmediate(raycaster);
+            Debug.Log($"❌ [Step #{stepNumber}] GraphicRaycaster 제거");
+        }
         
-        // Canvas 제거
         Canvas canvas = GetComponent<Canvas>();
         if (canvas != null)
+        {
             DestroyImmediate(canvas);
+            Debug.Log($"❌ [Step #{stepNumber}] Canvas 제거");
+        }
 
-        // CanvasGroup Raycast 차단 복원
+        // ★ CanvasGroup.blocksRaycasts = true로 복구
+        // (부모 패널의 GraphicRaycaster가 입력 처리)
         if (canvasGroup != null)
         {
-            canvasGroup.blocksRaycasts = true;  // 복귀 후 다시 활성화
-            Debug.Log($"🔒 [Step #{stepNumber}] CanvasGroup.blocksRaycasts = true (복귀)");
+            canvasGroup.blocksRaycasts = true;
+            Debug.Log($"🔒 [Step #{stepNumber}] CanvasGroup.blocksRaycasts = true");
         }
 
         // 부모로 복귀
