@@ -1,4 +1,5 @@
 using UnityEngine;
+using TMPro;
 using System.Collections.Generic;
 
 public class CookingGuideController : MonoBehaviour
@@ -13,6 +14,12 @@ public class CookingGuideController : MonoBehaviour
     public RecipeBoard recipeBoard;    // 중앙 메인 보드
     public HeadHUD headHUD;            // 우측 상단 HUD
     public TimerManager timerManager;  // 좌측 타이머 관리자
+    public UnityEngine.UI.RawImage rightScreenImage; // 우측 화면 (Raw Image)
+    public UnityEngine.Video.VideoPlayer videoPlayer; // 영상 재생기
+
+    [Header("UI References")]
+    public TextMeshProUGUI stepTitleText;   // 제목 텍스트
+    public TextMeshProUGUI descriptionText;
 
     private void Awake()
     {
@@ -52,22 +59,77 @@ public class CookingGuideController : MonoBehaviour
     }
 
     // 모든 UI 갱신 로직
-    private void UpdateAllUI()
+    void UpdateAllUI()
     {
+        // 1. 데이터가 없으면 아무것도 안 함 (에러 방지)
+        if (recipeSteps == null || recipeSteps.Count == 0) return;
+
+        // 2. 현재 단계 데이터 가져오기
         RecipeStep currentStep = recipeSteps[currentStepIndex];
 
-        // 1. 중앙 보드 갱신
-        recipeBoard.UpdateBoard(currentStep);
+        // =========================================================
+        // [기능 1] 레시피 보드: 전체 내용을 보여주되, 현재 단계만 강조
+        // =========================================================
+        
+        // 제목: "Step 1: 양파 썰기" (여기는 이미 +1이 잘 되어 있었습니다)
+        stepTitleText.text = $"Step {currentStepIndex + 1}: {currentStep.stepTitle}";
 
-        // 2. 헤드 HUD (진행률) 갱신
-        float progress = (float)(currentStepIndex + 1) / recipeSteps.Count;
-        headHUD.UpdateHUD(currentStepIndex + 1, recipeSteps.Count, currentStep.stepTitle, progress);
+        // 내용: 전체 리스트를 돌면서 현재 단계만 노란색으로 칠하기
+        string fullDescription = "";
+        for (int i = 0; i < recipeSteps.Count; i++)
+        {
+            if (i == currentStepIndex)
+            {
+                // [현재 단계] 노란색 + 굵게 + 화살표
+                fullDescription += $"<color=yellow><b>▶ {recipeSteps[i].description}</b></color>\n\n";
+            }
+            else
+            {
+                // [다른 단계] 회색으로 연하게
+                fullDescription += $"<color=#CCCCCC>{i + 1}. {recipeSteps[i].description}</color>\n\n";
+            }
+        }
+        descriptionText.text = fullDescription;
 
-        // 3. 타이머 자동 생성 (시간 설정이 있는 단계라면)
+        // =========================================================
+        // [기능 2] 타이머 관리
+        // =========================================================
+        
+        // 현재 단계에 타이머가 필요하면 생성
         if (currentStep.timerSeconds > 0)
         {
-            // 타이머 매니저에게 요청 (좌측 상단에 띄우기)
             timerManager.SpawnTimer(currentStep.timerSeconds, currentStep.stepTitle);
+        }
+        
+        // (주의: 아까 코드에 타이머 생성 구문이 여기에 또 있었습니다. 중복 삭제했습니다!)
+
+        // =========================================================
+        // [기능 3] 비디오 플레이어 제어
+        // =========================================================
+        if (currentStep.stepVideo != null)
+        {
+            rightScreenImage.gameObject.SetActive(true); // 화면 켜기
+            videoPlayer.clip = currentStep.stepVideo;    // 비디오 갈아끼우기
+            videoPlayer.Play();                          // 재생
+        }
+        // 비디오가 없으면 -> 화면 끄기
+        else
+        {
+            videoPlayer.Stop();                           // 정지
+            rightScreenImage.gameObject.SetActive(false); // 화면 숨기기
+        }
+
+        // =========================================================
+        // [기능 4] HUD 업데이트 (수정된 부분)
+        // =========================================================
+        if (headHUD != null)
+        {
+            // 1. 진행률 계산
+            float progress = (float)(currentStepIndex + 1) / (float)recipeSteps.Count;
+
+            // 2. HUD 갱신
+            // [중요] 첫 번째 인자에 +1을 해서 넘겨줍니다! (0 -> 1, 1 -> 2)
+            headHUD.UpdateHUD(currentStepIndex + 1, recipeSteps.Count, currentStep.stepTitle, progress);
         }
     }
 }
