@@ -5,11 +5,14 @@ using System.IO;
 /// <summary>
 /// 레시피 데이터 관리자
 /// - CSV 파일에서 레시피 데이터 로드
-/// - 레시피별 이미지 로드
-/// - 다른 컨트롤러에서 사용
+/// - CookingGuideController와 호환되는 형식으로 제공
+/// - 다른 UI에서도 재사용 가능
 /// </summary>
 public class RecipeDataManager : MonoBehaviour
 {
+    /// <summary>
+    /// CookingGuideController.CookingStep과 동일한 구조
+    /// </summary>
     [System.Serializable]
     public struct CookingStep
     {
@@ -26,13 +29,12 @@ public class RecipeDataManager : MonoBehaviour
         public int recipeId;
         public string recipeName;
         public string category;
-        public string fullIngredients;  // 전체 재료 (쉼표로 구분)
+        public string fullIngredients;
         public List<CookingStep> steps;
     }
 
     private static RecipeDataManager instance;
     private List<RecipeData> allRecipes = new List<RecipeData>();
-    private Dictionary<int, Sprite[]> recipeImages = new Dictionary<int, Sprite[]>();
 
     public static RecipeDataManager Instance
     {
@@ -96,7 +98,7 @@ public class RecipeDataManager : MonoBehaviour
             recipe.fullIngredients = fields[3].Trim();
 
             // 단계 파싱
-            recipe.steps = ParseSteps(recipe.recipeId, fields[4], fields[5]);
+            recipe.steps = ParseSteps(recipe.recipeId, fields[4], fields[5], recipe.fullIngredients);
 
             allRecipes.Add(recipe);
 
@@ -107,18 +109,17 @@ public class RecipeDataManager : MonoBehaviour
     }
 
     /// <summary>
-    /// CSV 라인을 필드로 분리 (세미콜론 처리)
+    /// CSV 라인을 필드로 분리
     /// </summary>
     private string[] ParseCSVLine(string line)
     {
-        // 간단한 파싱 (쉼표로 분리)
         return line.Split(',');
     }
 
     /// <summary>
     /// 단계별 데이터 파싱
     /// </summary>
-    private List<CookingStep> ParseSteps(int recipeId, string stepsText, string imagesText)
+    private List<CookingStep> ParseSteps(int recipeId, string stepsText, string imagesText, string fullIngredients)
     {
         List<CookingStep> steps = new List<CookingStep>();
         
@@ -132,8 +133,8 @@ public class RecipeDataManager : MonoBehaviour
 
             CookingStep step = new CookingStep();
             step.title = stepArray[i].Trim();
-            step.ingredients = "";  // 나중에 설정
-            step.heatLevel = "";    // 나중에 설정
+            step.ingredients = ""; // 단계별로 나눠서 가져올 수 없음
+            step.heatLevel = ""; // csv파일에서 가져올 없는 값
             step.timerSeconds = 300f;  // 기본 5분
 
             // 이미지 로드
@@ -150,15 +151,66 @@ public class RecipeDataManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 특정 레시피 가져오기
+    /// 레시피 이름으로 검색 → 해당 레시피의 모든 단계만 반환
+    /// ingredients는 모든 단계에 같은 재료 문자열 포함
+    /// 레시피가 없으면 빈 리스트 반환
+    /// 
+    /// Input : 레시피 이름 ex) "계란볶음밥"
+    /// Output : 레시피 단계 리스트, 원소는 dict로 title, ingredients, heatLevel, timerSeconds, stepImage로 구성
+    /// 
+    /// 사용 예시:
+    /// List<CookingStep> steps = RecipeDataManager.Instance.GetRecipeSteps("계란볶음밥");
+    /// cookingController.stepList = steps;
     /// </summary>
-    public RecipeData GetRecipe(int recipeId)
+    public List<CookingStep> GetRecipeSteps(string recipeName)
+    {
+        var recipe = allRecipes.Find(r => r.recipeName == recipeName);
+        return recipe.steps != null ? recipe.steps : new List<CookingStep>();
+    }
+
+    /// <summary>
+    /// ID로 검색 (숫자)
+    /// GetRecipeSteps()와 동일하지만 ID 기반
+
+    /// Input : 레시피 ID ex) 2
+    /// Output : GetRecipeSteps와 동일
+    /// </summary>
+    public List<CookingStep> GetRecipeStepsById(int recipeId)
+    {
+        var recipe = allRecipes.Find(r => r.recipeId == recipeId);
+        return recipe.steps != null ? recipe.steps : new List<CookingStep>();
+    }
+
+    /// <summary>
+    /// 단계뿐만 아니라 레시피 메타데이터도 반환(RecipeData 구조체)
+    /// recipe.recipeName, recipe.category 같은 정보 접근 가능
+    /// 
+    /// Input : 레시피 이름 ex) "계란볶음밥"
+    /// Output : 레시피 단계 리스트와 메타데이터를 포함하는 dict
+    /// recipeId, recipeName, category, fulIngredients, steps(레시피단계 리스트)로 구성
+    /// </summary>
+    public RecipeData GetRecipe(string recipeName)
+    {
+        return allRecipes.Find(r => r.recipeName == recipeName);
+    }
+
+    /// <summary>
+    /// GetRecipe()와 동일하지만 ID 기반
+    /// 
+    /// Input : 레시피 ID
+    /// Output : GetRecipe과 동일
+    /// </summary>
+    public RecipeData GetRecipeById(int recipeId)
     {
         return allRecipes.Find(r => r.recipeId == recipeId);
     }
 
     /// <summary>
-    /// 모든 레시피 목록 가져오기
+    /// DB에 있는 모든 레시피 목록 반환
+    /// UI에서 레시피 선택 목록 만들 때 사용
+    /// 
+    /// output :  레시피 리스트, 각 원소는 RecipeData 구조체
+    /// recipeId, recipeName, category, fullIngredients, steps 포함
     /// </summary>
     public List<RecipeData> GetAllRecipes()
     {
@@ -166,10 +218,18 @@ public class RecipeDataManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 레시피 이름으로 검색
+    /// DB에 있는 모든 레시피 목록 반환
+    /// UI에서 레시피 선택 목록 만들 때 사용
+    /// 
+    /// output : 레시피 이름 리스트, 각 원소가 레시피 이름 문자열
     /// </summary>
-    public RecipeData GetRecipeByName(string recipeName)
+    public List<string> GetAllRecipeNames()
     {
-        return allRecipes.Find(r => r.recipeName == recipeName);
+        List<string> names = new List<string>();
+        foreach (var recipe in allRecipes)
+        {
+            names.Add(recipe.recipeName);
+        }
+        return names;
     }
 }
