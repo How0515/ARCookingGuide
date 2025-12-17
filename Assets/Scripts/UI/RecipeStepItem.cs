@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using Microsoft.MixedReality.Toolkit.UI;
 using Microsoft.MixedReality.Toolkit.Input;
 
@@ -124,8 +125,24 @@ public class RecipeStepItem : MonoBehaviour
         if (moveButtonTrans != null && moveButton == null)
         {
             moveButton = moveButtonTrans.GetComponent<Button>();
-            if (moveButton != null)
-                moveButton.onClick.AddListener(OnMoveButtonClicked);
+            
+            // ★ onClick 제거, PointerDown/Up 이벤트 추가
+            // EventTrigger로 PointerDown/Up 감지하여 누르는 동안 분리 + 드래그
+            EventTrigger trigger = moveButtonTrans.gameObject.GetComponent<EventTrigger>();
+            if (trigger == null)
+                trigger = moveButtonTrans.gameObject.AddComponent<EventTrigger>();
+            
+            // PointerDown: 누르는 시점에 분리 + 드래그 활성화
+            EventTrigger.Entry pointerDownEntry = new EventTrigger.Entry();
+            pointerDownEntry.eventID = EventTriggerType.PointerDown;
+            pointerDownEntry.callback.AddListener((data) => OnMoveButtonPointerDown());
+            trigger.triggers.Add(pointerDownEntry);
+            
+            // PointerUp: 떼는 시점에 드래그 비활성화
+            EventTrigger.Entry pointerUpEntry = new EventTrigger.Entry();
+            pointerUpEntry.eventID = EventTriggerType.PointerUp;
+            pointerUpEntry.callback.AddListener((data) => OnMoveButtonPointerUp());
+            trigger.triggers.Add(pointerUpEntry);
             
             // MoveButton에 ObjectManipulator 추가 (없으면)
             moveButtonManipulator = moveButtonTrans.GetComponent<ObjectManipulator>();
@@ -174,8 +191,48 @@ public class RecipeStepItem : MonoBehaviour
     }
 
     /// <summary>
-    /// 손모양 버튼 클릭 이벤트
-    /// 분리되지 않았으면 분리하고 드래그 활성화
+    /// ★ 파란 버튼 누르는 시점 이벤트
+    /// 누르는 순간 분리하고 드래그 활성화 (누르고 있는 동안 드래그 가능)
+    /// </summary>
+    private void OnMoveButtonPointerDown()
+    {
+        if (!isDetached)
+        {
+            DetachFromParent();
+            
+            // 분리 후 ObjectManipulator 활성화 (파란 버튼 누르고 있는 동안 드래그)
+            if (moveButtonManipulator != null)
+            {
+                moveButtonManipulator.enabled = true;
+                Debug.Log($"✅ [Step #{stepNumber}] 파란 버튼 누르기 - 분리 + 드래그 활성화");
+            }
+        }
+        else
+        {
+            // 이미 분리된 상태면 드래그만 활성화
+            if (moveButtonManipulator != null)
+            {
+                moveButtonManipulator.enabled = true;
+                Debug.Log($"✅ [Step #{stepNumber}] 파란 버튼 누르기 - 이미 분리됨, 드래그만 활성화");
+            }
+        }
+    }
+
+    /// <summary>
+    /// ★ 파란 버튼 떼는 시점 이벤트
+    /// 떼는 순간 드래그 비활성화 (분리 상태는 유지)
+    /// </summary>
+    private void OnMoveButtonPointerUp()
+    {
+        if (moveButtonManipulator != null)
+        {
+            moveButtonManipulator.enabled = false;
+            Debug.Log($"❌ [Step #{stepNumber}] 파란 버튼 떼기 - 드래그 비활성화 (분리 상태는 유지)");
+        }
+    }
+
+    /// <summary>
+    /// 손모양 버튼 클릭 이벤트 (이제 사용 안 함)
     /// </summary>
     private void OnMoveButtonClicked()
     {
@@ -282,9 +339,14 @@ public class RecipeStepItem : MonoBehaviour
 
         // 부모에서 분리
         transform.SetParent(null);
+        
+        // ★ 월드 좌표 및 변환 복원 (Z축 뒤로 안 가도록)
         rectTransform.position = worldPos;
         rectTransform.rotation = worldRot;
         rectTransform.localScale = worldScale;
+        
+        // anchoredPosition3D도 유지 (UI 기준 위치)
+        rectTransform.anchoredPosition3D = Vector3.zero;  // 로컬에서는 중심
 
         // ★ Canvas 추가 (독립적 렌더링 필수)
         Canvas canvas = gameObject.GetComponent<Canvas>();
@@ -293,7 +355,15 @@ public class RecipeStepItem : MonoBehaviour
             canvas = gameObject.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.WorldSpace;
             canvas.worldCamera = Camera.main;  // EventCamera 설정
-            Debug.Log($"🎨 [Step #{stepNumber}] Canvas 추가 (WorldSpace)");
+            
+            // ★ Canvas의 RectTransform을 현재 위치에 맞춰야 함
+            // (WorldSpace Canvas의 위치는 Canvas의 RectTransform에 의존)
+            RectTransform canvasRect = canvas.GetComponent<RectTransform>();
+            canvasRect.position = worldPos;
+            canvasRect.rotation = worldRot;
+            canvasRect.localScale = worldScale;
+            
+            Debug.Log($"🎨 [Step #{stepNumber}] Canvas 추가 (WorldSpace) - Pos: {worldPos}");
         }
 
         GraphicRaycaster raycaster = gameObject.GetComponent<GraphicRaycaster>();
