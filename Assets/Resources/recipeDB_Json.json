@@ -3,8 +3,6 @@
     {
       "id": 1,
       "name_kr": "계란볶음밥",
-      "name_vi": "Cơm chiên trứng",
-      "name_en": "",
       "ingredients": [
         "밥 2공기",
         "달걀 2개",
@@ -25,8 +23,6 @@
     {
       "id": 2,
       "name_kr": "김치찌개",
-      "name_vi": "Canh kim chi",
-      "name_en": "",
       "ingredients": [
         "김치 1/2포기",
         "포도씨유 1큰술",
@@ -52,8 +48,6 @@
     {
       "id": 3,
       "name_kr": "불고기",
-      "name_vi": "Thịt bò bulgogi",
-      "name_en": "",
       "ingredients": [
         "소불고기 400g",
         "식용유 약간",

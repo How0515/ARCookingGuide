@@ -1,835 +1,132 @@
-// using UnityEngine;
-// using TMPro;
-// using UnityEngine.UI;
-// using System.Linq;
-
-// public class RecipeManager : MonoBehaviour
-// {
-//     [Header("=== UI References (kéo từ HUD vào đây) ===")]
-//     public TextMeshProUGUI txtRecipeName;
-//     public TextMeshProUGUI txtStepTitle;
-//     public TextMeshProUGUI txtDescription;
-//     public TextMeshProUGUI txtIngredients;
-//     public TextMeshProUGUI txtTimer;
-//     public TextMeshProUGUI txtTip;
-//     public Image imgStep;
-
-//     [Header("=== Settings ===")]
-//     public int startRecipeId = 1;           // món đầu tiên khi chạy Play
-
-//     private RecipeDatabase db;
-//     private Recipe currentRecipe;
-//     private int currentStepIndex = 0;
-//     private TimerHUD timerHUD;
-
-
-
-//     void Awake()
-//     {
-//         timerHUD = GetComponent<TimerHUD>();
-//         LoadDatabase();
-//     }
-
-//     void Start()
-//     {
-//         StartRecipe(startRecipeId);
-//     }
-
-//     void LoadDatabase()
-//     {
-//         TextAsset json = Resources.Load<TextAsset>("recipeDB");
-//         db = JsonUtility.FromJson<RecipeDatabase>(json.text);
-//     }
-
-//     public void StartRecipe(int recipeId)
-//     {
-//         currentRecipe = db.recipes.Find(r => r.id == recipeId);
-//         currentStepIndex = 0;
-//         txtRecipeName.text = currentRecipe.name_kr;
-//         txtIngredients.text = "재료: " + string.Join(", ", currentRecipe.ingredients);
-//         ShowCurrentStep();
-//     }
-
-//     public void NextStep()
-//     {
-//         if (currentStepIndex < currentRecipe.steps.Count - 1)
-//         {
-//             currentStepIndex++;
-//             ShowCurrentStep();
-//         }
-//     }
-
-//     public void PreviousStep()
-//     {
-//         if (currentStepIndex > 0)
-//         {
-//             currentStepIndex--;
-//             ShowCurrentStep();
-//         }
-//     }
-
-//     void ShowCurrentStep()
-//     {
-//         var step = currentRecipe.steps[currentStepIndex];
-//         txtStepTitle.text = $"단계 {currentStepIndex + 1}: {step.title}";
-//         txtDescription.text = step.description;
-//         txtTip.text = "팁: " + step.tip;
-
-//         // Load ảnh (đặt ảnh trong Assets/RecipeDB/Images/step11.jpg …)
-//         Sprite sprite = Resources.Load<Sprite>("RecipeDB/Images/" + step.imageName);
-//         if (sprite != null) imgStep.sprite = sprite;
-
-//         // Timer
-//         if (step.timerSeconds > 0)
-//             timerHUD.StartTimer(step.timerSeconds);
-//         else
-//             timerHUD.StopTimer();
-//     }
-
-//     // gọi từ VoiceController khi nói "팁 보여줘"
-//     public void ShowRandomTip()
-//     {
-//         if (db.globalTips.Count > 0)
-//         {
-//             string tip = db.globalTips[Random.Range(0, db.globalTips.Count)];
-//             txtTip.text = "팁: " + tip;
-//         }
-//     }
-// }
-
-
-//2
-
-
-// using UnityEngine;
-// using TMPro;
-// using UnityEngine.UI;
-// using System.Collections.Generic;
-
-// public class RecipeManager : MonoBehaviour
-// {
-//     private TextMeshProUGUI txtRecipeName;
-//     private TextMeshProUGUI txtStepTitle;
-//     private TextMeshProUGUI txtIngredients;
-//     private TextMeshProUGUI txtDescription;
-//     private TextMeshProUGUI txtTimer;
-//     private TextMeshProUGUI txtTip;
-//     private Image imgStep;
-
-//     private TimerHUD timerHUD;
-//     private RecipeDatabase db;
-//     private Recipe currentRecipe;
-//     private int currentStepIndex = 0;
-
-//     void Awake()
-//     {
-//         txtRecipeName   = GameObject.Find("txtRecipeName").GetComponent<TextMeshProUGUI>();
-//         txtStepTitle    = GameObject.Find("txtStepTitle").GetComponent<TextMeshProUGUI>();
-//         txtIngredients  = GameObject.Find("txtIngredients").GetComponent<TextMeshProUGUI>();
-//         txtDescription  = GameObject.Find("txtDescription").GetComponent<TextMeshProUGUI>();
-//         txtTimer        = GameObject.Find("txtTimer").GetComponent<TextMeshProUGUI>();
-//         txtTip          = GameObject.Find("txtTip").GetComponent<TextMeshProUGUI>();
-//         imgStep         = GameObject.Find("imgStep").GetComponent<Image>();
-
-//         timerHUD = GetComponent<TimerHUD>();
-//         LoadDatabase();
-//         DisplayCurrentStep();
-//     }
-
-//     void LoadDatabase()
-//     {
-//         TextAsset jsonFile = Resources.Load<TextAsset>("recipeDB");
-//         if (jsonFile == null) { Debug.LogError("Không tìm thấy recipeDB.json!"); return; }
-//         db = JsonUtility.FromJson<RecipeDatabase>(jsonFile.text);
-//         currentRecipe = db.recipes[0];
-//     }
-
-//     public void NextStep() { if (currentStepIndex < currentRecipe.steps.Count - 1) { currentStepIndex++; DisplayCurrentStep(); } }
-//     public void PreviousStep() { if (currentStepIndex > 0) { currentStepIndex--; DisplayCurrentStep(); } }
-//     public void ShowRandomTip()
-//     {
-//         if (db.globalTips.Count > 0)
-//             txtTip.text = "팁: " + db.globalTips[Random.Range(0, db.globalTips.Count)];
-//     }
-
-//     void DisplayCurrentStep()
-//     {
-//         var step = currentRecipe.steps[currentStepIndex];
-//         txtRecipeName.text  = $"{currentRecipe.name_kr}\n({currentRecipe.name_vi})";
-//         txtStepTitle.text   = $"단계 {currentStepIndex + 1}: {step.title}";
-//         txtDescription.text = step.description;
-//         txtIngredients.text = "재료: " + string.Join(" • ", currentRecipe.ingredients);
-//         txtTip.text = step.tip != "" ? "팁: " + step.tip : "";
-
-//         if (step.timerSeconds > 0)
-//         {
-//             timerHUD.StartTimer(step.timerSeconds);
-//             txtTimer.gameObject.SetActive(true);
-//         }
-//         else txtTimer.gameObject.SetActive(false);
-//     }
-// }
-
-//3 
-
-// using UnityEngine;
-// using TMPro;
-// using UnityEngine.UI;
-// using System.Collections.Generic;
-
-// public class RecipeManager : MonoBehaviour
-// {
-//     private TextMeshProUGUI txtRecipeName;
-//     private TextMeshProUGUI txtStepTitle;
-//     private TextMeshProUGUI txtIngredients;
-//     private TextMeshProUGUI txtDescription;
-//     private TextMeshProUGUI txtTimer;
-//     private TextMeshProUGUI txtTip;
-//     private Image imgStep;
-
-//     private TimerHUD timerHUD;
-//     private RecipeDatabase db;
-//     private Recipe currentRecipe;
-//     private int currentStepIndex = 0;
-
-//     void Awake()
-//     {
-//         txtRecipeName   = GameObject.Find("txtRecipeName").GetComponent<TextMeshProUGUI>();
-//         txtStepTitle    = GameObject.Find("txtStepTitle").GetComponent<TextMeshProUGUI>();
-//         txtIngredients  = GameObject.Find("txtIngredients").GetComponent<TextMeshProUGUI>();
-//         txtDescription  = GameObject.Find("txtDescription").GetComponent<TextMeshProUGUI>();
-//         txtTimer        = GameObject.Find("txtTimer").GetComponent<TextMeshProUGUI>();
-//         txtTip          = GameObject.Find("txtTip").GetComponent<TextMeshProUGUI>();
-//         imgStep         = GameObject.Find("imgStep").GetComponent<Image>();
-
-//         timerHUD = GetComponent<TimerHUD>();
-
-//         LoadDatabase();
-//         DisplayCurrentStep();
-//     }
-
-//     // ----------------------
-//     // SỬA PHẦN LOAD DATA
-//     // ----------------------
-//     void LoadDatabase()
-//     {
-//         TextAsset jsonFile = Resources.Load<TextAsset>("recipeDB");
-
-//         if (jsonFile == null)
-//         {
-//             Debug.LogError("❌ Không tìm thấy recipeDB.json trong thư mục Resources!");
-//             return;
-//         }
-
-//         db = JsonUtility.FromJson<RecipeDatabase>(jsonFile.text);
-
-//         if (db == null || db.recipes == null || db.recipes.Count == 0)
-//         {
-//             Debug.LogError("❌ JSON không hợp lệ hoặc không có recipes!");
-//             return;
-//         }
-
-//         currentRecipe = db.recipes[0];
-//         currentStepIndex = 0;
-
-//         Debug.Log("✅ Loaded recipe: " + currentRecipe.name_vi);
-//     }
-
-//     // ----------------------
-
-//     public void NextStep()
-//     {
-//         if (currentStepIndex < currentRecipe.steps.Count - 1)
-//         {
-//             currentStepIndex++;
-//             DisplayCurrentStep();
-//         }
-//     }
-
-//     public void PreviousStep()
-//     {
-//         if (currentStepIndex > 0)
-//         {
-//             currentStepIndex--;
-//             DisplayCurrentStep();
-//         }
-//     }
-
-//     public void ShowRandomTip()
-//     {
-//         if (db != null && db.globalTips != null && db.globalTips.Count > 0)
-//             txtTip.text = "팁: " + db.globalTips[Random.Range(0, db.globalTips.Count)];
-//     }
-
-//     // ----------------------
-//     // SỬA HIỂN THỊ STEP
-//     // ----------------------
-//     void DisplayCurrentStep()
-//     {
-//         if (currentRecipe == null) return;
-
-//         var step = currentRecipe.steps[currentStepIndex];
-
-//         txtRecipeName.text  = $"{currentRecipe.name_kr}\n({currentRecipe.name_vi})";
-//         txtStepTitle.text   = $"단계 {currentStepIndex + 1}: {step.title}";
-//         txtDescription.text = step.description;
-//         txtIngredients.text = "재료: " + string.Join(" • ", currentRecipe.ingredients);
-
-//         // Tip Step
-//         txtTip.text = string.IsNullOrEmpty(step.tip) ? "" : "팁: " + step.tip;
-
-//         // ----------- LOAD ẢNH -----------
-//         if (!string.IsNullOrEmpty(step.imageName))
-//         {
-//             Sprite s = Resources.Load<Sprite>("RecipeImages/" + step.imageName);
-//             if (s != null) imgStep.sprite = s;
-//             else Debug.LogWarning("⚠ Không tìm thấy ảnh: " + step.imageName);
-//         }
-
-//         // ---------- TIMER ----------
-//         if (step.timerSeconds > 0)
-//         {
-//             timerHUD.StartTimer(step.timerSeconds);
-//             txtTimer.gameObject.SetActive(true);
-//         }
-//         else
-//         {
-//             txtTimer.gameObject.SetActive(false);
-//         }
-//     }
-// }
-
-
-// 4
-
-// using UnityEngine;
-// using TMPro;
-// using UnityEngine.UI;
-// using System.Collections.Generic;
-
-// public class RecipeManager : MonoBehaviour
-// {
-//     private TextMeshProUGUI txtRecipeName;
-//     private TextMeshProUGUI txtStepTitle;
-//     private TextMeshProUGUI txtIngredients;
-//     private TextMeshProUGUI txtDescription;
-//     private TextMeshProUGUI txtTimer;
-//     private TextMeshProUGUI txtTip;
-//     private Image imgStep;
-
-//     private TimerHUD timerHUD;
-//     private RecipeDatabase db;
-//     private Recipe currentRecipe;
-//     private int currentStepIndex = 0;
-
-//     void Awake()
-//     {
-//         txtRecipeName   = GameObject.Find("txtRecipeName").GetComponent<TextMeshProUGUI>();
-//         txtStepTitle    = GameObject.Find("txtStepTitle").GetComponent<TextMeshProUGUI>();
-//         txtIngredients  = GameObject.Find("txtIngredients").GetComponent<TextMeshProUGUI>();
-//         txtDescription  = GameObject.Find("txtDescription").GetComponent<TextMeshProUGUI>();
-//         txtTimer        = GameObject.Find("txtTimer").GetComponent<TextMeshProUGUI>();
-//         txtTip          = GameObject.Find("txtTip").GetComponent<TextMeshProUGUI>();
-//         imgStep         = GameObject.Find("imgStep").GetComponent<Image>();
-
-//         timerHUD = GetComponent<TimerHUD>();
-
-//         LoadDatabase();
-//         DisplayCurrentStep();
-//     }
-
-//     [System.Serializable]
-//     private class Wrapper
-//     {
-//         public List<Recipe> recipes;
-//         public List<string> globalTips;
-//     }
-
-//     void LoadDatabase()
-//     {
-//         TextAsset jsonFile = Resources.Load<TextAsset>("recipeDB_Json");
-
-//         if (jsonFile == null)
-//         {
-//             Debug.LogError("❌ Không tìm thấy recipeDB_Json.json trong thư mục Resources!");
-//             return;
-//         }
-
-//         Debug.Log("➡ JSON RAW:");
-//         Debug.Log(jsonFile.text);
-
-//         Wrapper w = JsonUtility.FromJson<Wrapper>(jsonFile.text);
-
-//         if (w == null)
-//         {
-//             Debug.LogError("❌ Wrapper null → JSON lỗi format cho JsonUtility!");
-//             return;
-//         }
-
-//         db = new RecipeDatabase
-//         {
-//             recipes = w.recipes,
-//             globalTips = w.globalTips
-//         };
-
-//         if (db.recipes == null || db.recipes.Count == 0)
-//         {
-//             Debug.LogError("❌ Không có recipe nào trong JSON!");
-//             return;
-//         }
-
-//         currentRecipe = db.recipes[0];
-//         currentStepIndex = 0;
-
-//         Debug.Log("✅ Loaded recipe: " + currentRecipe.name_vi);
-//     }
-
-//     public void NextStep()
-//     {
-//         if (currentStepIndex < currentRecipe.steps.Count - 1)
-//         {
-//             currentStepIndex++;
-//             DisplayCurrentStep();
-//         }
-//     }
-
-//     public void PreviousStep()
-//     {
-//         if (currentStepIndex > 0)
-//         {
-//             currentStepIndex--;
-//             DisplayCurrentStep();
-//         }
-//     }
-
-//     public void ShowRandomTip()
-//     {
-//         if (db != null && db.globalTips != null && db.globalTips.Count > 0)
-//             txtTip.text = "팁: " + db.globalTips[Random.Range(0, db.globalTips.Count)];
-//     }
-
-//     void DisplayCurrentStep()
-//     {
-//         if (currentRecipe == null) return;
-
-//         var step = currentRecipe.steps[currentStepIndex];
-
-//         txtRecipeName.text  = $"{currentRecipe.name_kr}\n({currentRecipe.name_vi})";
-//         txtStepTitle.text   = $"단계 {currentStepIndex + 1}: {step.title}";
-//         txtDescription.text = step.description;
-//         txtIngredients.text = "재료: " + string.Join(" • ", currentRecipe.ingredients);
-
-//         txtTip.text = string.IsNullOrEmpty(step.tip) ? "" : "팁: " + step.tip;
-
-//         if (!string.IsNullOrEmpty(step.imageName))
-//         {
-//             Sprite s = Resources.Load<Sprite>("RecipeImages/" + step.imageName);
-//             if (s != null) imgStep.sprite = s;
-//             else Debug.LogWarning("⚠ Không tìm thấy ảnh: " + step.imageName);
-//         }
-
-//         if (step.timerSeconds > 0)
-//         {
-//             timerHUD.StartTimer(step.timerSeconds);
-//             txtTimer.gameObject.SetActive(true);
-//         }
-//         else
-//         {
-//             txtTimer.gameObject.SetActive(false);
-//         }
-//     }
-// }
-
-
-// 5
-
-// using UnityEngine;
-// using TMPro;
-// using UnityEngine.UI;
-// using System.Collections.Generic;
-
-// public class RecipeManager : MonoBehaviour
-// {
-//     private TextMeshProUGUI txtRecipeName;
-//     private TextMeshProUGUI txtStepTitle;
-//     private TextMeshProUGUI txtIngredients;
-//     private TextMeshProUGUI txtDescription;
-//     private TextMeshProUGUI txtTimer;
-//     private TextMeshProUGUI txtTip;
-//     private Image imgStep;
-
-//     private TimerHUD timerHUD;
-//     private RecipeDatabase db;
-//     private Recipe currentRecipe;
-//     private int currentStepIndex = 0;
-
-//     void Awake()
-//     {
-//         // --- Tìm UI tự động + chống NullReference ---
-//         txtRecipeName   = FindTMP("txtRecipeName");
-//         txtStepTitle    = FindTMP("txtStepTitle");
-//         txtIngredients  = FindTMP("txtIngredients");
-//         txtDescription  = FindTMP("txtDescription");
-//         txtTimer        = FindTMP("txtTimer");
-//         txtTip          = FindTMP("txtTip");
-//         imgStep         = FindImg("imgStep");
-
-//         timerHUD = GetComponent<TimerHUD>();
-
-//         LoadDatabase();
-//         DisplayCurrentStep();
-//     }
-
-//     // ===========================
-//     // HELPER: Tìm TMP an toàn
-//     // ===========================
-//     private TextMeshProUGUI FindTMP(string name)
-//     {
-//         GameObject obj = GameObject.Find(name);
-
-//         if (obj == null)
-//         {
-//             Debug.LogError("❌ Không tìm thấy object: " + name);
-//             return null;
-//         }
-
-//         var tmp = obj.GetComponent<TextMeshProUGUI>();
-//         if (tmp == null)
-//             Debug.LogError("❌ Object '" + name + "' KHÔNG có TextMeshProUGUI!");
-
-//         return tmp;
-//     }
-
-//     // ===========================
-//     // HELPER: Tìm Image an toàn
-//     // ===========================
-//     private Image FindImg(string name)
-//     {
-//         GameObject obj = GameObject.Find(name);
-
-//         if (obj == null)
-//         {
-//             Debug.LogError("❌ Không tìm thấy object: " + name);
-//             return null;
-//         }
-
-//         var img = obj.GetComponent<Image>();
-//         if (img == null)
-//             Debug.LogError("❌ Object '" + name + "' KHÔNG có Image component!");
-
-//         return img;
-//     }
-
-
-//     // ===========================
-//     // LOAD DATABASE JSON
-//     // ===========================
-//     [System.Serializable]
-//     private class Wrapper
-//     {
-//         public List<Recipe> recipes;
-//         public List<string> globalTips;
-//     }
-
-//     void LoadDatabase()
-//     {
-//         TextAsset jsonFile = Resources.Load<TextAsset>("recipeDB_Json");
-
-//         if (jsonFile == null)
-//         {
-//             Debug.LogError("❌ Không tìm thấy recipeDB_Json.json trong Resources!");
-//             return;
-//         }
-
-//         Debug.Log("➡ JSON RAW:");
-//         Debug.Log(jsonFile.text);
-
-//         Wrapper w = JsonUtility.FromJson<Wrapper>(jsonFile.text);
-
-//         if (w == null)
-//         {
-//             Debug.LogError("❌ JSON format sai — JsonUtility không đọc được!");
-//             return;
-//         }
-
-//         db = new RecipeDatabase
-//         {
-//             recipes = w.recipes,
-//             globalTips = w.globalTips
-//         };
-
-//         if (db.recipes == null || db.recipes.Count == 0)
-//         {
-//             Debug.LogError("❌ Không có recipe nào trong JSON!");
-//             return;
-//         }
-
-//         currentRecipe = db.recipes[0];
-//         currentStepIndex = 0;
-
-//         Debug.Log("✅ Loaded recipe: " + currentRecipe.name_vi);
-//     }
-
-
-//     // ===========================
-//     // STEP CHANGE
-//     // ===========================
-//     public void NextStep()
-//     {
-//         if (currentStepIndex < currentRecipe.steps.Count - 1)
-//         {
-//             currentStepIndex++;
-//             DisplayCurrentStep();
-//         }
-//     }
-
-//     public void PreviousStep()
-//     {
-//         if (currentStepIndex > 0)
-//         {
-//             currentStepIndex--;
-//             DisplayCurrentStep();
-//         }
-//     }
-
-
-//     // ===========================
-//     // RANDOM TIP
-//     // ===========================
-//     public void ShowRandomTip()
-//     {
-//         if (db != null && db.globalTips != null && db.globalTips.Count > 0)
-//             txtTip.text = "팁: " + db.globalTips[Random.Range(0, db.globalTips.Count)];
-//     }
-
-
-//     // ===========================
-//     // DISPLAY CURRENT STEP
-//     // ===========================
-//     void DisplayCurrentStep()
-//     {
-//         if (currentRecipe == null)
-//         {
-//             Debug.LogError("❌ currentRecipe NULL → database chưa load?");
-//             return;
-//         }
-
-//         var step = currentRecipe.steps[currentStepIndex];
-
-//         if (txtRecipeName != null)
-//             txtRecipeName.text = $"{currentRecipe.name_kr}\n({currentRecipe.name_vi})";
-
-//         if (txtStepTitle != null)
-//             txtStepTitle.text = $"단계 {currentStepIndex + 1}: {step.title}";
-
-//         if (txtDescription != null)
-//             txtDescription.text = step.description;
-
-//         if (txtIngredients != null)
-//             txtIngredients.text = "재료: " + string.Join(" • ", currentRecipe.ingredients);
-
-//         if (txtTip != null)
-//             txtTip.text = string.IsNullOrEmpty(step.tip) ? "" : "팁: " + step.tip;
-
-//         // Load image
-//         if (!string.IsNullOrEmpty(step.imageName) && imgStep != null)
-//         {
-//             Sprite s = Resources.Load<Sprite>("RecipeImages/" + step.imageName);
-//             if (s != null) imgStep.sprite = s;
-//             else Debug.LogWarning("⚠ Không tìm thấy ảnh: " + step.imageName);
-//         }
-
-//         // Timer
-//         if (txtTimer != null)
-//         {
-//             if (step.timerSeconds > 0)
-//             {
-//                 timerHUD.StartTimer(step.timerSeconds);
-//                 txtTimer.gameObject.SetActive(true);
-//             }
-//             else
-//             {
-//                 txtTimer.gameObject.SetActive(false);
-//             }
-//         }
-//     }
-// }
-
-
-// 6
-
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using System.IO;
 
-public class RecipeManager : MonoBehaviour
+public class RecipesManager : MonoBehaviour
 {
-    private TextMeshProUGUI txtRecipeName;
-    private TextMeshProUGUI txtStepTitle;
-    private TextMeshProUGUI txtIngredients;
-    private TextMeshProUGUI txtDescription;
-    private TextMeshProUGUI txtTimer;
-    private TextMeshProUGUI txtTip;
-    private Image imgStep;
-
-    private TimerHUD timerHUD;
-    private RecipeDatabase db;
-    private Recipe currentRecipe;
-    private int currentStepIndex = 0;
-
-    // ======================================================
-    // AWAKE — FIND UI + LOAD DB
-    // ======================================================
-    void Awake()
-    {
-        // --- Auto find UI safely ---
-        txtRecipeName   = FindTMP("txtRecipeName");
-        txtStepTitle    = FindTMP("txtStepTitle");
-        txtIngredients  = FindTMP("txtIngredients");
-        txtDescription  = FindTMP("txtDescription");
-        txtTimer        = FindTMP("txtTimer");
-        txtTip          = FindTMP("txtTip");
-        imgStep         = FindImg("imgStep");
-
-        timerHUD = GetComponent<TimerHUD>();
-
-        LoadDatabase();
-        DisplayCurrentStep();
-    }
-
-    // ======================================================
-    // SAFE FIND TMP
-    // ======================================================
-    private TextMeshProUGUI FindTMP(string name)
-    {
-        GameObject obj = GameObject.Find(name);
-
-        if (obj == null)
-        {
-            Debug.LogError("❌ Không tìm thấy object: " + name);
-            return null;
-        }
-
-        var tmp = obj.GetComponent<TextMeshProUGUI>();
-        if (tmp == null)
-            Debug.LogError("❌ Object '" + name + "' KHÔNG có TextMeshProUGUI!");
-
-        return tmp;
-    }
-
-    // ======================================================
-    // SAFE FIND IMAGE
-    // ======================================================
-    private Image FindImg(string name)
-    {
-        GameObject obj = GameObject.Find(name);
-
-        if (obj == null)
-        {
-            Debug.LogError("❌ Không tìm thấy object: " + name);
-            return null;
-        }
-
-        var img = obj.GetComponent<Image>();
-        if (img == null)
-            Debug.LogError("❌ Object '" + name + "' KHÔNG có Image component!");
-
-        return img;
-    }
-
-    // ======================================================
-    // JSON WRAPPER
-    // ======================================================
+    // ================= DATA STRUCT =================
     [System.Serializable]
-    private class Wrapper
+    public class Recipe
     {
-        public List<Recipe> recipes;
-        public List<string> globalTips;
+        public string recipe_id;
+        public string name;
+        public string category;
+        public string ingredients;
+        public string steps;
+        public string images;
     }
 
-    // ======================================================
-    // LOAD JSON DATABASE
-    // ======================================================
-    void LoadDatabase()
+    // ================= CSV =================
+    public string csvFileName = "recipeDB";
+    private List<Recipe> recipes = new List<Recipe>();
+    private Recipe currentRecipe;
+
+    // ================= STEP =================
+    private int currentStepIndex = 0;
+    private List<string> stepList = new List<string>();
+    private List<string> imageList = new List<string>();
+
+    // ================= UI =================
+    [Header("UI")]
+    public TextMeshPro ingredientsText;
+    public TextMeshPro stepDescriptionText;
+    public Image stepImage;
+
+    // ================= START =================
+    void Start()
     {
-        TextAsset jsonFile = Resources.Load<TextAsset>("recipeDB_Json");
+        LoadRecipesFromCSV();
 
-        if (jsonFile == null)
+        if (recipes.Count == 0)
         {
-            Debug.LogError("❌ Không tìm thấy recipeDB_Json.json trong Resources!");
+            Debug.LogError("❌ No recipes loaded");
             return;
         }
 
-        Debug.Log("➡ JSON RAW:");
-        Debug.Log(jsonFile.text);
+        SelectFirstRecipe();
+        UpdateUI();
+    }
 
-        Wrapper w = JsonUtility.FromJson<Wrapper>(jsonFile.text);
-
-        if (w == null)
-        {
-            Debug.LogError("❌ JSON format sai — JsonUtility không đọc được!");
-            return;
-        }
-
-        db = new RecipeDatabase
-        {
-            recipes = w.recipes,
-            globalTips = w.globalTips
-        };
-
-        if (db.recipes == null || db.recipes.Count == 0)
-        {
-            Debug.LogError("❌ Không có recipe nào trong JSON!");
-            return;
-        }
-
-        currentRecipe = db.recipes[0];
+    // ================= SELECT =================
+    void SelectFirstRecipe()
+    {
+        currentRecipe = recipes[0];
         currentStepIndex = 0;
 
-        Debug.Log("✅ Loaded recipe: " + currentRecipe.name_vi);
+        ParseSteps();
+        ParseImages();
     }
 
-    // ======================================================
-    // LOAD SPRITE (NEW)
-    // Tự thử: no extension → .png → .jpg
-    // ======================================================
-    private Sprite LoadStepImage(string imageName)
+    // ================= PARSE =================
+    void ParseSteps()
     {
-        if (string.IsNullOrEmpty(imageName))
+        stepList.Clear();
+
+        string[] rawSteps = currentRecipe.steps.Split('\n');
+        foreach (string s in rawSteps)
         {
-            Debug.LogWarning("⚠ step.imageName rỗng!");
-            return null;
+            if (!string.IsNullOrWhiteSpace(s))
+                stepList.Add(s.Trim());
         }
-
-        // thử không có extension
-        Sprite sprite = Resources.Load<Sprite>("RecipeImages/" + imageName);
-
-        // thử .png
-        if (sprite == null)
-            sprite = Resources.Load<Sprite>("RecipeImages/" + imageName + ".png");
-
-        // thử .jpg
-        if (sprite == null)
-            sprite = Resources.Load<Sprite>("RecipeImages/" + imageName + ".jpg");
-
-        if (sprite == null)
-        {
-            Debug.LogWarning("⚠ Không tìm thấy ảnh trong Resources/RecipeImages/: " + imageName);
-        }
-
-        return sprite;
     }
 
-    // ======================================================
-    // STEP NAVIGATION
-    // ======================================================
+    void ParseImages()
+    {
+        imageList.Clear();
+
+        string[] rawImages = currentRecipe.images.Split(';');
+        foreach (string img in rawImages)
+        {
+            if (!string.IsNullOrWhiteSpace(img))
+                imageList.Add(img.Trim());
+        }
+    }
+
+    // ================= UI =================
+    void UpdateUI()
+    {
+        if (currentRecipe == null) return;
+
+        ingredientsText.text = currentRecipe.ingredients;
+
+        if (currentStepIndex < stepList.Count)
+            stepDescriptionText.text = stepList[currentStepIndex];
+
+        LoadStepImage();
+    }
+
+    void LoadStepImage()
+    {
+        if (stepImage == null) return;
+        if (currentStepIndex >= imageList.Count) return;
+
+        string imageName = imageList[currentStepIndex];
+        string cleanName = Path.GetFileNameWithoutExtension(imageName);
+
+        string path = "Images/" + cleanName;
+        Debug.Log("🔍 Load image: " + path);
+
+        Sprite sprite = Resources.Load<Sprite>(path);
+
+        if (sprite == null)
+        {
+            Debug.LogError("❌ Image not found: " + path);
+            return;
+        }
+
+        stepImage.sprite = sprite;
+        stepImage.preserveAspect = true;
+    }
+
+    // ================= BUTTON =================
     public void NextStep()
     {
-        if (currentStepIndex < currentRecipe.steps.Count - 1)
+        if (currentStepIndex < stepList.Count - 1)
         {
             currentStepIndex++;
-            DisplayCurrentStep();
+            UpdateUI();
         }
     }
 
@@ -838,74 +135,70 @@ public class RecipeManager : MonoBehaviour
         if (currentStepIndex > 0)
         {
             currentStepIndex--;
-            DisplayCurrentStep();
+            UpdateUI();
         }
     }
 
-    // ======================================================
-    // RANDOM TIP
-    // ======================================================
-    public void ShowRandomTip()
+    // ================= CSV LOADER =================
+    void LoadRecipesFromCSV()
     {
-        if (db != null && db.globalTips != null && db.globalTips.Count > 0)
-            txtTip.text = "팁: " + db.globalTips[Random.Range(0, db.globalTips.Count)];
-    }
+        TextAsset csvFile = Resources.Load<TextAsset>(csvFileName);
 
-    // ======================================================
-    // DISPLAY STEP (UPDATED FULL)
-    // ======================================================
-    void DisplayCurrentStep()
-    {
-        if (currentRecipe == null)
+        if (csvFile == null)
         {
-            Debug.LogError("❌ currentRecipe NULL → database chưa load?");
+            Debug.LogError("❌ CSV NOT FOUND: " + csvFileName);
             return;
         }
 
-        var step = currentRecipe.steps[currentStepIndex];
+        string[] lines = csvFile.text.Split('\n');
 
-        if (txtRecipeName != null)
-            txtRecipeName.text = $"{currentRecipe.name_kr}\n({currentRecipe.name_vi})";
-
-        if (txtStepTitle != null)
-            txtStepTitle.text = $"단계 {currentStepIndex + 1}: {step.title}";
-
-        if (txtDescription != null)
-            txtDescription.text = step.description;
-
-        if (txtIngredients != null)
-            txtIngredients.text = "재료: " + string.Join(" • ", currentRecipe.ingredients);
-
-        if (txtTip != null)
-            txtTip.text = string.IsNullOrEmpty(step.tip) ? "" : "팁: " + step.tip;
-
-        // ===========================
-        // IMAGE LOADING (NEW)
-        // ===========================
-        if (imgStep != null)
+        for (int i = 1; i < lines.Length; i++)
         {
-            Sprite stepSprite = LoadStepImage(step.imageName);
+            if (string.IsNullOrWhiteSpace(lines[i])) continue;
 
-            if (stepSprite != null)
-                imgStep.sprite = stepSprite;
-            else
-                imgStep.sprite = null; // tránh giữ ảnh cũ
+            List<string> cols = ParseCSVLine(lines[i]);
+            if (cols.Count < 6) continue;
+
+            recipes.Add(new Recipe
+            {
+                recipe_id = cols[0],
+                name = cols[1],
+                category = cols[2],
+                ingredients = cols[3],
+                steps = cols[4],
+                images = cols[5]
+            });
         }
 
-        // ===========================
-        // TIMER
-        // ===========================
-        if (txtTimer != null)
+        Debug.Log("✅ Loaded recipes: " + recipes.Count);
+    }
+
+    List<string> ParseCSVLine(string line)
+    {
+        List<string> result = new List<string>();
+        bool inQuotes = false;
+        string current = "";
+
+        foreach (char c in line)
         {
-            if (step.timerSeconds > 0)
+            if (c == '"')
             {
-                timerHUD.StartTimer(step.timerSeconds);
-                txtTimer.gameObject.SetActive(true);
+                inQuotes = !inQuotes;
+                continue;
+            }
+
+            if (c == ',' && !inQuotes)
+            {
+                result.Add(current);
+                current = "";
             }
             else
             {
-                txtTimer.gameObject.SetActive(false);
+                current += c;
             }
         }
+
+        result.Add(current);
+        return result;
     }
 }
