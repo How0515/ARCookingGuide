@@ -375,7 +375,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0.000067320005}
+  m_AnchoredPosition: {x: 0, y: 0.000019599041}
   m_SizeDelta: {x: 0, y: 300}
   m_Pivot: {x: 0, y: 1}
 --- !u!1 &158806608
@@ -1237,7 +1237,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 283552856}
   m_Direction: 0
   m_Value: 0
-  m_Size: 0.99999994
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -3001,28 +3001,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c12ce95ca3990240b56aac766cf0297, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  timerObject: {fileID: 962865937}
-  recipeSteps:
-  - stepTitle: "\uC7AC\uB8CC \uC53B\uAE30"
-    description: "\uD750\uB974\uB294 \uBB3C\uC5D0 \uAE68\uB057\uD558\uAC8C \uC53B\uC5B4\uC8FC\uC138\uC694"
-    timerSeconds: 30
-    stepVideo: {fileID: 0}
-  - stepTitle: "\uBA74 \uC0B6\uAE30"
-    description: "\uB053\uB294 \uBB3C\uC5D0 \uBA74 \uD22C\uD558"
-    timerSeconds: 180
-    stepVideo: {fileID: 0}
-  - stepTitle: "\uC18C\uC2A4 \uBCF6\uAE30"
-    description: "\uC57D\uBD88\uC5D0\uC11C \uBE60\uB974\uAC8C \uBCF6\uC544\uC8FC\uC138\uC694"
-    timerSeconds: 60
-    stepVideo: {fileID: 0}
+  recipeSteps: []
   currentStepIndex: 0
-  recipeBoard: {fileID: 1032156642}
-  headHUD: {fileID: 638785739}
-  timerManager: {fileID: 363787037}
-  rightScreenImage: {fileID: 56654260}
-  videoPlayer: {fileID: 56654259}
   stepTitleText: {fileID: 384571431}
   descriptionText: {fileID: 1346902293}
+  stepImage: {fileID: 0}
+  timerManager: {fileID: 0}
+  headHUD: {fileID: 638785739}
 --- !u!114 &1498132240
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3363,7 +3348,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 545440916}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0.9999832
+  m_Size: 0.9980131
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:

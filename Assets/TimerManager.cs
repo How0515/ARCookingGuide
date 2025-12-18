@@ -25,4 +25,13 @@ public class TimerManager : MonoBehaviour
             timerScript.Initialize(seconds);
         }
     }
+    public void ResetTimer()
+    {
+        // Xóa tất cả timer con đang tồn tại dưới spawnPoint
+        foreach (Transform child in spawnPoint)
+        {
+            Destroy(child.gameObject);
+        }
+    }
+
 }
