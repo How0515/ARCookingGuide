@@ -4,6 +4,8 @@ using System.Collections.Generic;
 
 public class CookingGuideController : MonoBehaviour
 {
+    // 1️⃣ [추가] 타이머 스크립트를 연결할 변수 만들기
+    public TimerObject timerObject;
     public static CookingGuideController Instance; // 어디서든 접근 가능하게 싱글톤 처리
 
     [Header("Data")]
@@ -48,6 +50,26 @@ public class CookingGuideController : MonoBehaviour
         }
     }
 
+    // [음성 명령] "Start Timer"라고 말하면 실행
+    public void StartCurrentTimer()
+    {
+        // 데이터 안전 장치
+        if (recipeSteps == null || recipeSteps.Count == 0) return;
+
+        RecipeStep currentStep = recipeSteps[currentStepIndex];
+
+        // 현재 단계에 타이머 설정 시간이 있다면 타이머 생성
+        if (currentStep.timerSeconds > 0)
+        {
+            timerManager.SpawnTimer(currentStep.timerSeconds, currentStep.stepTitle);
+            Debug.Log("음성 명령으로 타이머를 시작했습니다.");
+        }
+        else
+        {
+            Debug.Log("현재 단계에는 타이머가 없습니다.");
+        }
+    }
+
     // [이전] 단계 (필요시)
     public void GoToPrevStep()
     {
@@ -61,74 +83,67 @@ public class CookingGuideController : MonoBehaviour
     // 모든 UI 갱신 로직
     void UpdateAllUI()
     {
-        // 1. 데이터가 없으면 아무것도 안 함 (에러 방지)
         if (recipeSteps == null || recipeSteps.Count == 0) return;
 
         // 2. 현재 단계 데이터 가져오기
         RecipeStep currentStep = recipeSteps[currentStepIndex];
 
         // =========================================================
-        // [기능 1] 레시피 보드: 전체 내용을 보여주되, 현재 단계만 강조
+        // [기능 1] 레시피 보드: (기존 코드 유지)
         // =========================================================
-        
-        // 제목: "Step 1: 양파 썰기" (여기는 이미 +1이 잘 되어 있었습니다)
         stepTitleText.text = $"Step {currentStepIndex + 1}: {currentStep.stepTitle}";
 
-        // 내용: 전체 리스트를 돌면서 현재 단계만 노란색으로 칠하기
         string fullDescription = "";
         for (int i = 0; i < recipeSteps.Count; i++)
         {
             if (i == currentStepIndex)
-            {
-                // [현재 단계] 노란색 + 굵게 + 화살표
                 fullDescription += $"<color=yellow><b>▶ {recipeSteps[i].description}</b></color>\n\n";
-            }
             else
-            {
-                // [다른 단계] 회색으로 연하게
                 fullDescription += $"<color=#CCCCCC>{i + 1}. {recipeSteps[i].description}</color>\n\n";
-            }
         }
         descriptionText.text = fullDescription;
 
         // =========================================================
-        // [기능 2] 타이머 관리
+        // 🔥 [기능 2] 타이머 관리 (여기를 수정했습니다!)
         // =========================================================
         
-        // 현재 단계에 타이머가 필요하면 생성
-        if (currentStep.timerSeconds > 0)
+        // 기존의 timerManager.SpawnTimer 대신 -> 우리가 만든 timerObject를 직접 제어합니다.
+        if (timerObject != null)
         {
-            timerManager.SpawnTimer(currentStep.timerSeconds, currentStep.stepTitle);
+            // DB에 설정된 시간이 있으면 (0보다 크면)
+            if (currentStep.timerSeconds > 0)
+            {
+                timerObject.gameObject.SetActive(true);           // 타이머 켜기
+                timerObject.Initialize(currentStep.timerSeconds); // 시간 주입 (자동 시작 대기)
+            }
+            else
+            {
+                // 시간이 0이면 타이머 숨기기
+                timerObject.gameObject.SetActive(false);
+            }
         }
-        
-        // (주의: 아까 코드에 타이머 생성 구문이 여기에 또 있었습니다. 중복 삭제했습니다!)
 
         // =========================================================
-        // [기능 3] 비디오 플레이어 제어
+        // [기능 3] 비디오 플레이어 제어 (기존 코드 유지)
         // =========================================================
         if (currentStep.stepVideo != null)
         {
-            rightScreenImage.gameObject.SetActive(true); // 화면 켜기
-            videoPlayer.clip = currentStep.stepVideo;    // 비디오 갈아끼우기
-            videoPlayer.Play();                          // 재생
+            rightScreenImage.gameObject.SetActive(true);
+            videoPlayer.clip = currentStep.stepVideo;
+            videoPlayer.Play();
         }
-        // 비디오가 없으면 -> 화면 끄기
         else
         {
-            videoPlayer.Stop();                           // 정지
-            rightScreenImage.gameObject.SetActive(false); // 화면 숨기기
+            videoPlayer.Stop();
+            rightScreenImage.gameObject.SetActive(false);
         }
 
         // =========================================================
-        // [기능 4] HUD 업데이트 (수정된 부분)
+        // [기능 4] HUD 업데이트 (기존 코드 유지)
         // =========================================================
         if (headHUD != null)
         {
-            // 1. 진행률 계산
             float progress = (float)(currentStepIndex + 1) / (float)recipeSteps.Count;
-
-            // 2. HUD 갱신
-            // [중요] 첫 번째 인자에 +1을 해서 넘겨줍니다! (0 -> 1, 1 -> 2)
             headHUD.UpdateHUD(currentStepIndex + 1, recipeSteps.Count, currentStep.stepTitle, progress);
         }
     }

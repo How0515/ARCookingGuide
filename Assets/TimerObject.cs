@@ -23,6 +23,7 @@ public class TimerObject : MonoBehaviour
     // [추가] 버튼이 눌리면 실행되는 함수
     public void OnClickStart()
     {
+        Debug.Log("🖱️ 버튼 클릭 신호 수신 성공!");
         isRunning = true; // 시간 흐르기 시작
         if (startButton != null)
             startButton.SetActive(false); // 시작 버튼 숨기기 (숫자만 보이게)
