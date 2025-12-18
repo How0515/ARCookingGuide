@@ -11,19 +11,6 @@
 //     public UnityEngine.Video.VideoClip stepVideo;
 // }
 
-// using UnityEngine;
-// using System;
-
-// [Serializable]
-// public class RecipeStep
-// {
-//     public string tipId;        // tip_id từ CSV
-//     public string recipe;       // recipe từ CSV
-//     public string stepTitle;    // tip_name → stepTitle
-//     [TextArea] public string description; // tip_description → description
-//     public string gifFile;      // tên file GIF/ảnh trong Resources/RecipeDB/GIF
-//     public float timerSeconds;  // nếu muốn thêm timer, default = 0
-// }
 
 // using UnityEngine;
 // using System;
