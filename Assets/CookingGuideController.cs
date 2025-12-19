@@ -35,14 +35,33 @@ public class CookingGuideController : MonoBehaviour
 
     private void Start()
     {
-        LoadRecipeFromCSV();
-        if (currentRecipe != null && currentRecipe.steps.Count > 0)
+        // 자동 로드 제거 - RecipeListManager에서 선택 후 LoadRecipe() 호출됨
+        Debug.Log("✅ CookingGuideController 준비 완료 - 레시피 선택 대기 중...");
+    }
+
+    /// <summary>
+    /// 외부에서 레시피를 로드 (RecipeListManager에서 호출)
+    /// </summary>
+    public void LoadRecipe(Recipe recipe)
+    {
+        if (recipe == null)
+        {
+            Debug.LogError("❌ 전달받은 레시피가 null입니다");
+            return;
+        }
+
+        currentRecipe = recipe;
+        currentStepIndex = 0;
+
+        Debug.Log($"✅ 레시피 로드: {recipe.name} ({recipe.steps.Count} 단계)");
+        
+        if (recipe.steps.Count > 0)
         {
             UpdateAllUI();
         }
         else
         {
-            Debug.LogError("❌ 레시피 로드 실패 또는 빈 데이터");
+            Debug.LogError("❌ 레시피에 단계가 없습니다");
         }
     }
 
@@ -131,164 +150,9 @@ public class CookingGuideController : MonoBehaviour
                   $"  ProgressText: {progressText != null}");
     }
 
-    /// <summary>
-    /// CSV 파일에서 레시피 데이터 로드
-    /// </summary>
-    void LoadRecipeFromCSV()
-    {
-        TextAsset csvFile = Resources.Load<TextAsset>("RECIPEDB_100");
-        if (csvFile == null)
-        {
-            Debug.LogError("❌ CSV 파일을 찾을 수 없습니다: Resources/RECIPEDB_100");
-            return;
-        }
-
-        string[] lines = csvFile.text.Split(new char[] { '\n' }, System.StringSplitOptions.RemoveEmptyEntries);
-        
-        if (lines.Length < 2)
-        {
-            Debug.LogError("❌ CSV 파일이 비어있습니다");
-            return;
-        }
-
-        // 두 번째 레시피 로드 (첫 번째는 이미지 없음)
-        string line = lines[2].Trim();
-        if (string.IsNullOrEmpty(line)) return;
-
-        currentRecipe = ParseRecipeLine(line);
-        if (currentRecipe != null)
-        {
-            Debug.Log($"✅ 레시피 로드 완료: {currentRecipe.name} ({currentRecipe.steps.Count} 단계)");
-        }
-    }
-
-    /// <summary>
-    /// CSV 한 줄을 파싱해서 Recipe 객체 생성
-    /// CSV 포맷: recipe_id, name, category, ingredients, steps, images
-    /// </summary>
-    Recipe ParseRecipeLine(string line)
-    {
-        // CSV 파싱 (큰따옴표로 묶인 필드 고려)
-        List<string> cols = ParseCSVLine(line);
-        
-        if (cols.Count < 6)
-        {
-            Debug.LogError($"❌ CSV 데이터가 불완전합니다: {cols.Count}개 필드");
-            return null;
-        }
-
-        Recipe recipe = new Recipe();
-        recipe.recipe_id = cols[0].Trim();
-        recipe.name = cols[1].Trim();
-        recipe.category = cols[2].Trim();
-        recipe.ingredients = cols[3].Trim();
-        
-        // 단계 파싱 (|| 로 구분)
-        string stepsText = cols[4].Trim();
-        string imagesText = cols[5].Trim();
-
-        recipe.steps = ParseSteps(stepsText, imagesText);
-        return recipe;
-    }
-
-    /// <summary>
-    /// CSV 라인을 큰따옴표 고려하여 파싱
-    /// </summary>
-    List<string> ParseCSVLine(string line)
-    {
-        List<string> fields = new List<string>();
-        bool inQuotes = false;
-        string currentField = "";
-
-        for (int i = 0; i < line.Length; i++)
-        {
-            char c = line[i];
-
-            if (c == '"')
-            {
-                inQuotes = !inQuotes;
-            }
-            else if (c == ',' && !inQuotes)
-            {
-                fields.Add(currentField);
-                currentField = "";
-            }
-            else
-            {
-                currentField += c;
-            }
-        }
-
-        // 마지막 필드 추가
-        fields.Add(currentField);
-        return fields;
-    }
-
-    /// <summary>
-    /// 단계 텍스트와 이미지를 파싱해서 RecipeStep 리스트 생성
-    /// </summary>
-    List<RecipeStep> ParseSteps(string stepsText, string imagesText)
-    {
-        List<RecipeStep> steps = new List<RecipeStep>();
-        
-        // || 로 구분된 단계들 파싱
-        string[] stepLines = stepsText.Split(new string[] { "||" }, System.StringSplitOptions.None);
-        string[] imageFiles = imagesText.Split(';');
-
-        for (int i = 0; i < stepLines.Length; i++)
-        {
-            string stepText = stepLines[i].Trim();
-            if (string.IsNullOrEmpty(stepText)) continue;
-
-            RecipeStep step = new RecipeStep();
-            step.stepNumber = i + 1;
-            step.description = stepText;
-            step.timerSeconds = 300f; // 기본값 5분 (300초)
-
-            // 해당 단계의 이미지 로드
-            if (i < imageFiles.Length)
-            {
-                step.imageName = imageFiles[i].Trim();
-                LoadStepImage(step);
-            }
-
-            steps.Add(step);
-        }
-
-        return steps;
-    }
-
-    /// <summary>
-    /// 단계 이미지 로드 (Assets/RecipeDB/Images 폴더에서)
-    /// </summary>
-    void LoadStepImage(RecipeStep step)
-    {
-        if (string.IsNullOrEmpty(step.imageName)) return;
-
-        // 파일명에서 확장자 제거
-        string filenameWithoutExtension = Path.GetFileNameWithoutExtension(step.imageName);
-        
-        // 런타임: Resources 폴더에 이미지가 있어야 함
-        // 에디터: Assets/RecipeDB/Images에서 로드
-#if UNITY_EDITOR
-        string assetPath = $"Assets/RecipeDB/Images/{step.imageName}";
-        if (File.Exists(assetPath))
-        {
-            step.stepImage = UnityEditor.AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath);
-        }
-        else
-        {
-            Debug.LogWarning($"⚠️ 파일을 찾을 수 없습니다: {assetPath}");
-        }
-#else
-        // 런타임: Resources에서 로드
-        step.stepImage = Resources.Load<Texture2D>($"RecipeDB/Images/{filenameWithoutExtension}");
-        if (step.stepImage == null)
-        {
-            Debug.LogWarning($"⚠️ 이미지를 로드할 수 없습니다: RecipeDB/Images/{filenameWithoutExtension}");
-        }
-#endif
-    }
+    // =========================================================
+    // CSV 파싱 로직은 RecipeListManager로 이동
+    // =========================================================
 
     // =========================================================
     // UI 업데이트 로직
