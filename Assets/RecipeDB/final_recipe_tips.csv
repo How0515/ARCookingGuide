@@ -1,0 +1,23 @@
+﻿tip_id,tip_name,tip_description,gif
+1,대파 송송 썰기,대파를 얇게 송송 썰어 향을 잘 살린다,tip_1_chop_onion.gif
+2,계란 풀기,볼에 계란을 넣고 젓가락으로 고르게 풀어준다,tip_2_whisk_egg.gif
+3,밥 풀기,밥을 미리 풀어 알갱이가 뭉치지 않게 준비한다,tip_3_mix_rice.gif
+4,파기름 내기,기름에 대파를 볶아 파향을 충분히 낸다,tip_4_saute_green_onion.gif
+5,김치 썰기,김치를 먹기 좋은 크기로 잘라 준비한다,tip_5_cuting_kimchi.gif
+6,돼지고기 썰기,돼지고기를 적당한 크기로 썬다,tip_6_meat_knife.gif
+7,두부 썰기,두부를 사각 모양으로 썰어 넣기 좋게 준비한다,tip_7_cutting_tofu.gif
+8,대파 어슷썰기,대파를 비스듬히 썰어 향을 살린다,tip_8_chop_onion.gif
+9,소고기 양념 버무리기,소고기에 양념을 넣고 고르게 버무린다,tip_9_mixing_meat gif
+10,양파 채썰기,양파를 얇게 채썰어 단맛을 살린다,tip_10_slice_onion.gif
+11,당근 채썰기,당근을 가늘게 채썰어 식감을 더한다,tip_11_slice_carrot.gif
+12,대파 어슷썰기,대파를 어슷하게 썰어 불고기에 넣는다,tip_12_chop_onion.gif
+13,대파 어슷썰기,대파를 비스듬한 각도로 썰어주세요.,Bias_cut_green_onion.gif
+14,기본 다지기,재료를 잘게 다질 때 사용하는 방법입니다.,Chop.gif
+15,칼 잡는 법 (검지),검지를 칼등에 대고 정교하게 잡는 법입니다.,Fingerpointgrip.gif
+16,칼 잡는 법 (기본),칼자루를 망치 잡듯 단단하게 잡는 법입니다.,Hammergrip.gif
+17,칼 사용 기초,칼날을 안전하고 올바르게 움직이는 방법입니다.,Howtouseknife.gif
+18,마늘 다지기,마늘을 칼로 아주 잘게 다져주세요.,Mincing_garlic.gif
+19,생강 껍질 벗기기,숟가락이나 칼등으로 생강 껍질을 긁어내세요.,Peel_ginger.gif
+20,토마토 껍질 벗기기,십자 칼집을 내고 데친 후 껍질을 벗깁니다.,Peel_tomato.gif
+21,당겨 썰기 (Pull),칼을 몸 쪽으로 당기면서 재료를 썹니다.,Pullslice.gif
+22,밀어 썰기 (Push),칼을 앞쪽으로 밀면서 재료를 썹니다.,Pushslice.gif
